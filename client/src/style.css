@@ -1,0 +1,39 @@
+@tailwind base;
+
+@tailwind components;
+
+.clearHidden {
+  @apply hidden;
+}
+.clearVisible {
+  @apply flex-none absolute right-0 mt-3 mr-5 fill-current text-xlry-blue w-16 h-16;
+}
+.arrowBlue {
+  @apply flex-none fill-current text-xlry-blue w-20 h-20;
+}
+.arrowGray {
+  @apply flex-none fill-current text-gray-400 w-20 h-20;
+}
+.showRequestBtn {
+  @apply flex-none fill-current text-xlry-blue w-28 h-28 pr-5;
+}
+.hideRequestBtn {
+  @apply hidden;
+}
+.showInQueueBadge {
+  @apply flex-none bg-xlry-blue rounded-lg px-4 py-4 text-3xl font-semibold;
+}
+.hideInQueueBadge {
+  @apply hidden;
+}
+
+@tailwind utilities;
+
+/* input::-webkit-search-cancel-button{
+    position:relative;
+    right:30px;  
+    -webkit-appearance: none;
+    height: 50px;
+    width: 50px;
+    background-image: url("./images/icons8-x-50.png")
+} */
