@@ -13,10 +13,10 @@ export class Worker {
   //   Worker.accessToken;
   // }
 
-  public getSearchResults = async (term: string): Promise<ISpotifyTrack[]> => {
+  public getSearchResults = async (term: string, accessToken: string): Promise<ISpotifyTrack[]> => {
     const response: AxiosResponse = await axios.get(`https://api.spotify.com/v1/search?limit=10`, {
       headers: {
-        Authorization: `Bearer ${OAuthToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
       params: { q: term, type: "track" },
     });
@@ -37,20 +37,20 @@ export class Worker {
     });
   };
 
-  public async getTrackData(trackId: string): Promise<ITrack> {
-    const response: AxiosResponse = await axios.get(`https://api.spotify.com/v1/tracks/${trackId}`, {
-      headers: {
-        Authorization: `Bearer ${OAuthToken}`,
-      },
-    });
-    const { album, artists, explicit, name, duration_ms } = response.data;
-    return {
-      id: trackId,
-      name,
-      artist: artists[0].name,
-      imageId: album.images[0].url,
-      explicit,
-      durationInMs: duration_ms,
-    };
-  }
+  // public async getTrackData(trackId: string): Promise<ITrack> {
+  //   const response: AxiosResponse = await axios.get(`https://api.spotify.com/v1/tracks/${trackId}`, {
+  //     headers: {
+  //       Authorization: `Bearer ${OAuthToken}`,
+  //     },
+  //   });
+  //   const { album, artists, explicit, name, duration_ms } = response.data;
+  //   return {
+  //     id: trackId,
+  //     name,
+  //     artist: artists[0].name,
+  //     imageId: album.images[0].url,
+  //     explicit,
+  //     durationInMs: duration_ms,
+  //   };
+  // }
 }

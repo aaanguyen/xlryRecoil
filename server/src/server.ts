@@ -2,9 +2,20 @@ import path from "path";
 import express, { Express } from "express";
 import WebSocket from "ws";
 import axios, { AxiosResponse } from "axios";
+import qs from "querystring";
 
-const OAuthToken: string =
-  "BQDjnHNuwDTR8oW89j1Asluuri3rIzrXy5xGaffOysOQHEk79loWtRNMvk6pfuQ_O0mjBOXgnG0GYxJWQe3NCwKkpK4HP0OlVAldbU5GloUSyp98HV0Bu1O-_iEuBRRJC7pW4gWRRjqT1Jh2lLodEQlYYWJ6Ej7K7ENFWCK7409dNyN4ze_y0MKYSeHqYTIL_ajdsbOwhv6NdRw49j0Yk0fS7De6EpyzPW23uvs";
+import Party from "./Party";
+
+export const SPOTIFY_CLIENT =
+  "N2VkNTQyNzM0ZTEyNGM3NDg2ZWY1YzcxZDQ2NGE5MDU6ZDJkNDU1NDhhOTQ4NDU5ZGJiZDEzOGI5ZTc0NmRiOTU=";
+const ONE_HOUR = 3600000;
+
+// const clientId: string = "7ed542734e124c7486ef5c71d464a905";
+// const clientSecret: string = "d2d45548a948459dbbd138b9e746db95";
+const redirectUri: string = "http%3A%2F%2F192%2E168%2E0%2E16%3A8080%2F";
+
+// const OAuthToken: string =
+//   "BQDjnHNuwDTR8oW89j1Asluuri3rIzrXy5xGaffOysOQHEk79loWtRNMvk6pfuQ_O0mjBOXgnG0GYxJWQe3NCwKkpK4HP0OlVAldbU5GloUSyp98HV0Bu1O-_iEuBRRJC7pW4gWRRjqT1Jh2lLodEQlYYWJ6Ej7K7ENFWCK7409dNyN4ze_y0MKYSeHqYTIL_ajdsbOwhv6NdRw49j0Yk0fS7De6EpyzPW23uvs";
 
 interface PingPongWebSocket extends WebSocket {
   isAlive: boolean;
@@ -12,7 +23,7 @@ interface PingPongWebSocket extends WebSocket {
   participantName: string;
 }
 
-interface ITrack {
+export interface ITrack {
   id: string;
   name: string;
   artist: string;
@@ -21,7 +32,7 @@ interface ITrack {
   durationInMs: number;
 }
 
-interface IRequest {
+export interface IRequest {
   rank: number;
   requestedBy: string;
   upvotedBy: string[];
@@ -29,17 +40,19 @@ interface IRequest {
   track: ITrack;
 }
 
-interface IParty {
-  name: string;
-  partyHost: string;
-  accessToken: string;
-  playbackStarted: boolean;
-  participants: Map<string, string>;
-  connections: Map<string, WebSocket | null>;
-  requests: IRequest[];
-}
+// interface IParty {
+//   name: string;
+//   partyHost: string;
+//   accessToken: string;
+//   playbackStarted: boolean;
+//   participants: Map<string, string>;
+//   connections: Map<string, WebSocket | null>;
+//   requests: IRequest[];
+//   currentlyPlayingTrack: IRequest;
+// }
 
-const parties: Map<string, IParty> = new Map();
+const parties: Map<string, Party> = new Map();
+const watchdogs: Map<string, NodeJS.Timeout> = new Map();
 
 // const firstParty: IParty = {
 //   partyHost: "ant",
@@ -153,7 +166,7 @@ wsServer.on("connection", (socket: WebSocket) => {
     const ppSocket = this as PingPongWebSocket;
     ppSocket.isAlive = true;
   });
-  socket.on("message", (inMsg: string) => {
+  socket.on("message", async (inMsg: string) => {
     const msgParts: string[] = inMsg.toString().split(".");
     const message: string = msgParts[0];
     const partyName: string = msgParts[1];
@@ -164,26 +177,28 @@ wsServer.on("connection", (socket: WebSocket) => {
           socket.send(`${partyName}.create.${participantName}.partyNameTaken`);
         } else {
           const pid: string = msgParts[3];
-          const accessToken: string = msgParts[4];
+          const tokenCode: string = msgParts[4];
           const ppSocket = socket as PingPongWebSocket;
           ppSocket.partyName = partyName;
           ppSocket.participantName = participantName;
-          parties.set(partyName, {
-            name: partyName,
-            partyHost: participantName,
-            accessToken,
-            playbackStarted: false,
-            connections: new Map([[pid, socket]]) as Map<string, WebSocket>,
-            requests: [] as IRequest[],
-            participants: new Map([[participantName, pid]]) as Map<string, string>,
-          });
-          socket.send(`${partyName}.create.${participantName}.success`);
+          parties.set(partyName, new Party(partyName, participantName, pid, socket));
+          const party = parties.get(partyName);
+          if (party) {
+            await party.init(tokenCode);
+            socket.send(`${party.name}.create.${party.partyHost}.success.${party.accessToken}`);
+          }
+          watchdogs.set(
+            partyName,
+            setTimeout(() => {
+              endParty(partyName);
+            }, 600000)
+          );
         }
         break;
       }
       case "join": {
         if (parties.has(partyName)) {
-          const party: IParty | undefined = parties.get(partyName);
+          const party: Party | undefined = parties.get(partyName);
           if (party) {
             const pid: string = msgParts[3];
             const participantPid: string | undefined = party.participants.get(participantName);
@@ -202,11 +217,14 @@ wsServer.on("connection", (socket: WebSocket) => {
               ppSocket.participantName = assignedParticipantName;
               const stringifiedRequests = JSON.stringify(party.requests);
               socket.send(
-                `${partyName}.join.${assignedParticipantName}.success.${party.accessToken}.${stringifiedRequests}`
+                `${partyName}.join.${assignedParticipantName}.success.${
+                  party.accessToken
+                }.${stringifiedRequests}.${JSON.stringify(party.currentlyPlayingRequest)}`
               );
               console.log(`${assignedParticipantName} joined ${partyName}!`);
             }
           }
+          hitParty(partyName);
         } else {
           socket.send(`${partyName}.join.${participantName}.invalidParty`);
         }
@@ -214,20 +232,11 @@ wsServer.on("connection", (socket: WebSocket) => {
       }
       case "request": {
         const stringifiedTrack: string = msgParts[3];
-        const party: IParty | undefined = parties.get(partyName);
+        const party: Party | undefined = parties.get(partyName);
+        console.log(party);
         if (party) {
-          addTrackToRequests(party, participantName, stringifiedTrack);
-          // wsServer.clients.forEach((inClient: WebSocket) => {
-          //   let ppSocket = inClient as PingPongWebSocket;
-          //   const stringifiedRequests = JSON.stringify(party.requests);
-          //   if (ppSocket.partyName === partyName) {
-          //     inClient.send(`${partyName}.update.${stringifiedRequests}`);
-          //   }
-          // });
-          const stringifiedRequests = JSON.stringify(party.requests);
-          party.connections.forEach((itSocket: WebSocket | null, itId: string) => {
-            if (itSocket) itSocket.send(`${partyName}.update.${stringifiedRequests}`);
-          });
+          party.addTrackToRequests(participantName, stringifiedTrack);
+          hitParty(partyName);
         } else {
           socket.send(`${partyName}.request.${participantName}.partyError`);
         }
@@ -235,7 +244,7 @@ wsServer.on("connection", (socket: WebSocket) => {
       }
       case "upvote": {
         const trackId: string = msgParts[3];
-        const party: IParty | undefined = parties.get(partyName);
+        const party: Party | undefined = parties.get(partyName);
         if (party) {
           const request: IRequest | undefined = party.requests.find(
             (request: IRequest) => request.track.id === trackId
@@ -244,11 +253,17 @@ wsServer.on("connection", (socket: WebSocket) => {
             upvoteRequest(request, participantName);
             const stringifiedRequests = JSON.stringify(party.requests);
             party.connections.forEach((itSocket: WebSocket | null, itId: string) => {
-              if (itSocket) itSocket.send(`${partyName}.update.${stringifiedRequests}`);
+              if (itSocket)
+                itSocket.send(
+                  `${partyName}.update.${stringifiedRequests}.${JSON.stringify(
+                    party.currentlyPlayingRequest
+                  )}`
+                );
             });
           } else {
             socket.send(`${partyName}.upvote.${participantName}.requestError.${trackId}`);
           }
+          hitParty(partyName);
         } else {
           socket.send(`${partyName}.upvote.${participantName}.partyError.${trackId}`);
         }
@@ -256,7 +271,7 @@ wsServer.on("connection", (socket: WebSocket) => {
       }
       case "downvote": {
         const trackId: string = msgParts[3];
-        const party: IParty | undefined = parties.get(partyName);
+        const party: Party | undefined = parties.get(partyName);
         if (party) {
           const request: IRequest | undefined = party.requests.find(
             (request: IRequest) => request.track.id === trackId
@@ -265,18 +280,24 @@ wsServer.on("connection", (socket: WebSocket) => {
             downvoteRequest(request, participantName);
             const stringifiedRequests = JSON.stringify(party.requests);
             party.connections.forEach((itSocket: WebSocket | null, itId: string) => {
-              if (itSocket) itSocket.send(`${partyName}.update.${stringifiedRequests}`);
+              if (itSocket)
+                itSocket.send(
+                  `${partyName}.update.${stringifiedRequests}.${JSON.stringify(
+                    party.currentlyPlayingRequest
+                  )}`
+                );
             });
           } else {
             socket.send(`${partyName}.downvote.${participantName}.requestError.${trackId}`);
           }
+          hitParty(partyName);
         } else {
           socket.send(`${partyName}.downvote.${participantName}.partyError.${trackId}`);
         }
         break;
       }
       case "reconnect": {
-        const party: IParty | undefined = parties.get(partyName);
+        const party: Party | undefined = parties.get(partyName);
         if (party) {
           // const ppSocket = socket as PingPongWebSocket;
           // ppSocket.partyName = partyName;
@@ -285,7 +306,9 @@ wsServer.on("connection", (socket: WebSocket) => {
           party.connections.set(pid, socket);
           const stringifiedRequests = JSON.stringify(party.requests);
           console.log(`${participantName} is reconnecting to ${partyName}`);
-          socket.send(`${partyName}.update.${stringifiedRequests}`);
+          socket.send(
+            `${partyName}.update.${stringifiedRequests}.${JSON.stringify(party.currentlyPlayingRequest)}`
+          );
         }
         break;
       }
@@ -294,7 +317,7 @@ wsServer.on("connection", (socket: WebSocket) => {
   socket.onclose = event => {
     console.log(`WebSocket is closed now. ${event.code}, ${event.reason}, ${event.wasClean}`);
     const ppSocket = socket as PingPongWebSocket;
-    const party: IParty | undefined = parties.get(ppSocket.partyName);
+    const party: Party | undefined = parties.get(ppSocket.partyName);
     if (party) {
       party.connections.forEach((itSocket: WebSocket | null, itId: string) => {
         if (socket === itSocket) {
@@ -338,7 +361,7 @@ const interval = setInterval(() => {
 }, 30000);
 
 const addParticipantToParty = (
-  party: IParty,
+  party: Party,
   newParticipant: string,
   pid: string,
   socket: WebSocket
@@ -355,25 +378,6 @@ const addParticipantToParty = (
   }
   party.connections.set(pid, socket);
   return participant;
-};
-
-const addTrackToRequests = (party: IParty, requestedBy: string, stringifiedTrack: string): void => {
-  const newTrack: ITrack = JSON.parse(stringifiedTrack);
-  if (!party.playbackStarted) {
-    startPlayback(newTrack.id);
-    party.playbackStarted = true;
-    setTimeout(() => {
-      handleQueue(party);
-    }, 5000);
-  } else {
-    party.requests.push({
-      rank: 1,
-      requestedBy,
-      upvotedBy: [requestedBy] as string[],
-      downvotedBy: [] as string[],
-      track: newTrack,
-    });
-  }
 };
 
 const upvoteRequest = (request: IRequest, upvotedBy: string): void => {
@@ -441,87 +445,23 @@ const encode = (originalString: string): string => {
   return encodedString;
 };
 
-const startPlayback = (trackId: string): void => {
-  axios.put(
-    `https://api.spotify.com/v1/me/player/play`,
-    {
-      uris: [`spotify:track:${trackId}`],
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${OAuthToken}`,
-      },
-    }
-  );
-  // return response.statusText === "No Content";
-};
-
-const addTrackToPlaybackQueue = (request: IRequest): void => {
-  axios.post(
-    `https://api.spotify.com/v1/me/player/queue`,
-    {},
-    {
-      headers: {
-        Authorization: `Bearer ${OAuthToken}`,
-      },
-      params: { uri: `spotify:track:${request.track.id}` },
-    }
-  );
-  console.log(`just added ${request.track.name} to the playback queue.`);
-};
-
-const handleQueue = async (party: IParty) => {
-  const timeUntilSongEnds = await getTimeUntilSongEnds();
-  const timeToSecondFunc: number = timeUntilSongEnds - 5000;
-  console.log(`first step of handleQueue: second step is called in ${timeToSecondFunc / 1000} seconds.`);
-  setTimeout(() => {
-    queueNextSong(party);
-    console.log(`second step of handleQueue: waiting 10 seconds until next handleQueue`);
-    setTimeout(() => {
-      handleQueue(party);
-    }, 10000);
-  }, timeToSecondFunc);
-};
-
-const getTimeUntilSongEnds = async (): Promise<number> => {
-  const response: AxiosResponse = await axios.get(`https://api.spotify.com/v1/me/player/currently-playing`, {
-    headers: {
-      Authorization: `Bearer ${OAuthToken}`,
-    },
-  });
-  return response.data.item.duration_ms - response.data.progress_ms;
-};
-
-const queueNextSong = (party: IParty) => {
-  party.requests.sort((x: IRequest, y: IRequest) => {
-    return y.rank - x.rank;
-  });
-  const nextSong: IRequest | undefined = party.requests.shift();
-  if (nextSong) {
-    console.log(`supposed to be adding ${nextSong.track.name}`);
-    addTrackToPlaybackQueue(nextSong);
-    const stringifiedRequests = JSON.stringify(party.requests);
-    party.connections.forEach((itSocket: WebSocket | null, itId: string) => {
-      if (itSocket) itSocket.send(`${party.name}.update.${stringifiedRequests}`);
-    });
+const hitParty = (partyName: string) => {
+  const timeout: NodeJS.Timeout | undefined = watchdogs.get(partyName);
+  if (timeout) {
+    clearTimeout(timeout);
+    watchdogs.set(
+      partyName,
+      setTimeout(() => {
+        endParty(partyName);
+      }, 600000)
+    );
   }
+  console.log(`${partyName} hit`);
 };
-// const startPlayback = async (trackId: string): Promise<AxiosResponse> => {
-//   const response: AxiosResponse = await axios.put(`https://api.spotify.com/v1/me/player/play`, {
-//     headers: {
-//       Authorization: `Bearer ${OAuthToken}`,
-//     },
-//     data: { uris: [`spotify:track:${trackId}`] },
-//   });
-//   return response;
-// };
 
-// const addTrackToPlaybackQueue = async (trackId: string): Promise<AxiosResponse> => {
-//   const response: AxiosResponse = await axios.post(`https://api.spotify.com/v1/me/player/queue`, {
-//     headers: {
-//       Authorization: `Bearer ${OAuthToken}`,
-//     },
-//     params: { uri: `spotify:track:${trackId}` },
-//   });
-//   return response;
-// };
+const endParty = (partyName: string) => {
+  parties.delete(partyName);
+  watchdogs.delete(partyName);
+  console.log(`deleted party: ${partyName}`);
+  console.log(parties);
+};

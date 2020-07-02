@@ -57,7 +57,12 @@ export default class Form extends Component<IProps, IState> {
         screennameErrorMessage: "",
       });
       if (this.props.role === "host") {
-        this.props.createParty(this.state.partyName, this.state.screenname, this.props.pid);
+        const queryString = window.location.search;
+        console.log(queryString);
+        const urlParams = new URLSearchParams(queryString);
+        const tokenCode = urlParams.get("code");
+        console.log(tokenCode);
+        this.props.createParty(this.state.partyName, this.state.screenname, this.props.pid, tokenCode);
       } else if (this.props.role === "guest") {
         this.props.joinParty(this.state.partyName, this.state.screenname, this.props.pid);
       }

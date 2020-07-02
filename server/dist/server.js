@@ -39,12 +39,28 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.SPOTIFY_CLIENT = void 0;
 var path_1 = __importDefault(require("path"));
 var express_1 = __importDefault(require("express"));
 var ws_1 = __importDefault(require("ws"));
-var axios_1 = __importDefault(require("axios"));
-var OAuthToken = "BQDjnHNuwDTR8oW89j1Asluuri3rIzrXy5xGaffOysOQHEk79loWtRNMvk6pfuQ_O0mjBOXgnG0GYxJWQe3NCwKkpK4HP0OlVAldbU5GloUSyp98HV0Bu1O-_iEuBRRJC7pW4gWRRjqT1Jh2lLodEQlYYWJ6Ej7K7ENFWCK7409dNyN4ze_y0MKYSeHqYTIL_ajdsbOwhv6NdRw49j0Yk0fS7De6EpyzPW23uvs";
+var Party_1 = __importDefault(require("./Party"));
+exports.SPOTIFY_CLIENT = "N2VkNTQyNzM0ZTEyNGM3NDg2ZWY1YzcxZDQ2NGE5MDU6ZDJkNDU1NDhhOTQ4NDU5ZGJiZDEzOGI5ZTc0NmRiOTU=";
+var ONE_HOUR = 3600000;
+// const clientId: string = "7ed542734e124c7486ef5c71d464a905";
+// const clientSecret: string = "d2d45548a948459dbbd138b9e746db95";
+var redirectUri = "http%3A%2F%2F192%2E168%2E0%2E16%3A8080%2F";
+// interface IParty {
+//   name: string;
+//   partyHost: string;
+//   accessToken: string;
+//   playbackStarted: boolean;
+//   participants: Map<string, string>;
+//   connections: Map<string, WebSocket | null>;
+//   requests: IRequest[];
+//   currentlyPlayingTrack: IRequest;
+// }
 var parties = new Map();
+var watchdogs = new Map();
 // const firstParty: IParty = {
 //   partyHost: "ant",
 //   accessToken: "tokenhere",
@@ -153,149 +169,165 @@ wsServer.on("connection", function (socket) {
         var ppSocket = this;
         ppSocket.isAlive = true;
     });
-    socket.on("message", function (inMsg) {
-        var msgParts = inMsg.toString().split(".");
-        var message = msgParts[0];
-        var partyName = msgParts[1];
-        var participantName = msgParts[2];
-        switch (message) {
-            case "create": {
-                if (parties.has(partyName)) {
+    socket.on("message", function (inMsg) { return __awaiter(void 0, void 0, void 0, function () {
+        var msgParts, message, partyName, participantName, _a, pid, tokenCode, ppSocket_1, party, party, pid, participantPid, assignedParticipantName, ppSocket_2, stringifiedRequests, stringifiedTrack, party, trackId_1, party_1, request, stringifiedRequests_1, trackId_2, party_2, request, stringifiedRequests_2, party, pid, stringifiedRequests;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    msgParts = inMsg.toString().split(".");
+                    message = msgParts[0];
+                    partyName = msgParts[1];
+                    participantName = msgParts[2];
+                    _a = message;
+                    switch (_a) {
+                        case "create": return [3 /*break*/, 1];
+                        case "join": return [3 /*break*/, 6];
+                        case "request": return [3 /*break*/, 7];
+                        case "upvote": return [3 /*break*/, 8];
+                        case "downvote": return [3 /*break*/, 9];
+                        case "reconnect": return [3 /*break*/, 10];
+                    }
+                    return [3 /*break*/, 11];
+                case 1:
+                    if (!parties.has(partyName)) return [3 /*break*/, 2];
                     socket.send(partyName + ".create." + participantName + ".partyNameTaken");
-                }
-                else {
-                    var pid = msgParts[3];
-                    var accessToken = msgParts[4];
-                    var ppSocket_1 = socket;
+                    return [3 /*break*/, 5];
+                case 2:
+                    pid = msgParts[3];
+                    tokenCode = msgParts[4];
+                    ppSocket_1 = socket;
                     ppSocket_1.partyName = partyName;
                     ppSocket_1.participantName = participantName;
-                    parties.set(partyName, {
-                        name: partyName,
-                        partyHost: participantName,
-                        accessToken: accessToken,
-                        playbackStarted: false,
-                        connections: new Map([[pid, socket]]),
-                        requests: [],
-                        participants: new Map([[participantName, pid]]),
-                    });
-                    socket.send(partyName + ".create." + participantName + ".success");
-                }
-                break;
-            }
-            case "join": {
-                if (parties.has(partyName)) {
-                    var party = parties.get(partyName);
-                    if (party) {
-                        var pid = msgParts[3];
-                        var participantPid = party.participants.get(participantName);
-                        if (participantPid && participantPid !== pid) {
-                            socket.send(partyName + ".join." + participantName + ".taken");
-                            break;
-                        }
-                        if (party.connections.get(pid)) {
-                            console.log("this should be null: " + party.connections.get(pid));
-                            socket.send(partyName + ".join." + participantName + ".alreadyPresent");
-                            break;
+                    parties.set(partyName, new Party_1.default(partyName, participantName, pid, socket));
+                    party = parties.get(partyName);
+                    if (!party) return [3 /*break*/, 4];
+                    return [4 /*yield*/, party.init(tokenCode)];
+                case 3:
+                    _b.sent();
+                    socket.send(party.name + ".create." + party.partyHost + ".success." + party.accessToken);
+                    _b.label = 4;
+                case 4:
+                    watchdogs.set(partyName, setTimeout(function () {
+                        endParty(partyName);
+                    }, 600000));
+                    _b.label = 5;
+                case 5: return [3 /*break*/, 11];
+                case 6:
+                    {
+                        if (parties.has(partyName)) {
+                            party = parties.get(partyName);
+                            if (party) {
+                                pid = msgParts[3];
+                                participantPid = party.participants.get(participantName);
+                                if (participantPid && participantPid !== pid) {
+                                    socket.send(partyName + ".join." + participantName + ".taken");
+                                    return [3 /*break*/, 11];
+                                }
+                                if (party.connections.get(pid)) {
+                                    console.log("this should be null: " + party.connections.get(pid));
+                                    socket.send(partyName + ".join." + participantName + ".alreadyPresent");
+                                    return [3 /*break*/, 11];
+                                }
+                                else {
+                                    assignedParticipantName = addParticipantToParty(party, participantName, pid, socket);
+                                    ppSocket_2 = socket;
+                                    ppSocket_2.partyName = partyName;
+                                    ppSocket_2.participantName = assignedParticipantName;
+                                    stringifiedRequests = JSON.stringify(party.requests);
+                                    socket.send(partyName + ".join." + assignedParticipantName + ".success." + party.accessToken + "." + stringifiedRequests + "." + JSON.stringify(party.currentlyPlayingRequest));
+                                    console.log(assignedParticipantName + " joined " + partyName + "!");
+                                }
+                            }
+                            hitParty(partyName);
                         }
                         else {
-                            var assignedParticipantName = addParticipantToParty(party, participantName, pid, socket);
-                            var ppSocket_2 = socket;
-                            ppSocket_2.partyName = partyName;
-                            ppSocket_2.participantName = assignedParticipantName;
-                            var stringifiedRequests = JSON.stringify(party.requests);
-                            socket.send(partyName + ".join." + assignedParticipantName + ".success." + party.accessToken + "." + stringifiedRequests);
-                            console.log(assignedParticipantName + " joined " + partyName + "!");
+                            socket.send(partyName + ".join." + participantName + ".invalidParty");
                         }
+                        return [3 /*break*/, 11];
                     }
-                }
-                else {
-                    socket.send(partyName + ".join." + participantName + ".invalidParty");
-                }
-                break;
-            }
-            case "request": {
-                var stringifiedTrack = msgParts[3];
-                var party = parties.get(partyName);
-                if (party) {
-                    addTrackToRequests(party, participantName, stringifiedTrack);
-                    // wsServer.clients.forEach((inClient: WebSocket) => {
-                    //   let ppSocket = inClient as PingPongWebSocket;
-                    //   const stringifiedRequests = JSON.stringify(party.requests);
-                    //   if (ppSocket.partyName === partyName) {
-                    //     inClient.send(`${partyName}.update.${stringifiedRequests}`);
-                    //   }
-                    // });
-                    var stringifiedRequests_1 = JSON.stringify(party.requests);
-                    party.connections.forEach(function (itSocket, itId) {
-                        if (itSocket)
-                            itSocket.send(partyName + ".update." + stringifiedRequests_1);
-                    });
-                }
-                else {
-                    socket.send(partyName + ".request." + participantName + ".partyError");
-                }
-                break;
-            }
-            case "upvote": {
-                var trackId_1 = msgParts[3];
-                var party = parties.get(partyName);
-                if (party) {
-                    var request = party.requests.find(function (request) { return request.track.id === trackId_1; });
-                    if (request) {
-                        upvoteRequest(request, participantName);
-                        var stringifiedRequests_2 = JSON.stringify(party.requests);
-                        party.connections.forEach(function (itSocket, itId) {
-                            if (itSocket)
-                                itSocket.send(partyName + ".update." + stringifiedRequests_2);
-                        });
+                    _b.label = 7;
+                case 7:
+                    {
+                        stringifiedTrack = msgParts[3];
+                        party = parties.get(partyName);
+                        console.log(party);
+                        if (party) {
+                            party.addTrackToRequests(participantName, stringifiedTrack);
+                            hitParty(partyName);
+                        }
+                        else {
+                            socket.send(partyName + ".request." + participantName + ".partyError");
+                        }
+                        return [3 /*break*/, 11];
                     }
-                    else {
-                        socket.send(partyName + ".upvote." + participantName + ".requestError." + trackId_1);
+                    _b.label = 8;
+                case 8:
+                    {
+                        trackId_1 = msgParts[3];
+                        party_1 = parties.get(partyName);
+                        if (party_1) {
+                            request = party_1.requests.find(function (request) { return request.track.id === trackId_1; });
+                            if (request) {
+                                upvoteRequest(request, participantName);
+                                stringifiedRequests_1 = JSON.stringify(party_1.requests);
+                                party_1.connections.forEach(function (itSocket, itId) {
+                                    if (itSocket)
+                                        itSocket.send(partyName + ".update." + stringifiedRequests_1 + "." + JSON.stringify(party_1.currentlyPlayingRequest));
+                                });
+                            }
+                            else {
+                                socket.send(partyName + ".upvote." + participantName + ".requestError." + trackId_1);
+                            }
+                            hitParty(partyName);
+                        }
+                        else {
+                            socket.send(partyName + ".upvote." + participantName + ".partyError." + trackId_1);
+                        }
+                        return [3 /*break*/, 11];
                     }
-                }
-                else {
-                    socket.send(partyName + ".upvote." + participantName + ".partyError." + trackId_1);
-                }
-                break;
-            }
-            case "downvote": {
-                var trackId_2 = msgParts[3];
-                var party = parties.get(partyName);
-                if (party) {
-                    var request = party.requests.find(function (request) { return request.track.id === trackId_2; });
-                    if (request) {
-                        downvoteRequest(request, participantName);
-                        var stringifiedRequests_3 = JSON.stringify(party.requests);
-                        party.connections.forEach(function (itSocket, itId) {
-                            if (itSocket)
-                                itSocket.send(partyName + ".update." + stringifiedRequests_3);
-                        });
+                    _b.label = 9;
+                case 9:
+                    {
+                        trackId_2 = msgParts[3];
+                        party_2 = parties.get(partyName);
+                        if (party_2) {
+                            request = party_2.requests.find(function (request) { return request.track.id === trackId_2; });
+                            if (request) {
+                                downvoteRequest(request, participantName);
+                                stringifiedRequests_2 = JSON.stringify(party_2.requests);
+                                party_2.connections.forEach(function (itSocket, itId) {
+                                    if (itSocket)
+                                        itSocket.send(partyName + ".update." + stringifiedRequests_2 + "." + JSON.stringify(party_2.currentlyPlayingRequest));
+                                });
+                            }
+                            else {
+                                socket.send(partyName + ".downvote." + participantName + ".requestError." + trackId_2);
+                            }
+                            hitParty(partyName);
+                        }
+                        else {
+                            socket.send(partyName + ".downvote." + participantName + ".partyError." + trackId_2);
+                        }
+                        return [3 /*break*/, 11];
                     }
-                    else {
-                        socket.send(partyName + ".downvote." + participantName + ".requestError." + trackId_2);
+                    _b.label = 10;
+                case 10:
+                    {
+                        party = parties.get(partyName);
+                        if (party) {
+                            pid = msgParts[3];
+                            party.connections.set(pid, socket);
+                            stringifiedRequests = JSON.stringify(party.requests);
+                            console.log(participantName + " is reconnecting to " + partyName);
+                            socket.send(partyName + ".update." + stringifiedRequests + "." + JSON.stringify(party.currentlyPlayingRequest));
+                        }
+                        return [3 /*break*/, 11];
                     }
-                }
-                else {
-                    socket.send(partyName + ".downvote." + participantName + ".partyError." + trackId_2);
-                }
-                break;
+                    _b.label = 11;
+                case 11: return [2 /*return*/];
             }
-            case "reconnect": {
-                var party = parties.get(partyName);
-                if (party) {
-                    // const ppSocket = socket as PingPongWebSocket;
-                    // ppSocket.partyName = partyName;
-                    // ppSocket.participantName = participantName;
-                    var pid = msgParts[3];
-                    party.connections.set(pid, socket);
-                    var stringifiedRequests = JSON.stringify(party.requests);
-                    console.log(participantName + " is reconnecting to " + partyName);
-                    socket.send(partyName + ".update." + stringifiedRequests);
-                }
-                break;
-            }
-        }
-    });
+        });
+    }); });
     socket.onclose = function (event) {
         console.log("WebSocket is closed now. " + event.code + ", " + event.reason + ", " + event.wasClean);
         var ppSocket = socket;
@@ -352,25 +384,6 @@ var addParticipantToParty = function (party, newParticipant, pid, socket) {
     }
     party.connections.set(pid, socket);
     return participant;
-};
-var addTrackToRequests = function (party, requestedBy, stringifiedTrack) {
-    var newTrack = JSON.parse(stringifiedTrack);
-    if (!party.playbackStarted) {
-        startPlayback(newTrack.id);
-        party.playbackStarted = true;
-        setTimeout(function () {
-            handleQueue(party);
-        }, 5000);
-    }
-    else {
-        party.requests.push({
-            rank: 1,
-            requestedBy: requestedBy,
-            upvotedBy: [requestedBy],
-            downvotedBy: [],
-            track: newTrack,
-        });
-    }
 };
 var upvoteRequest = function (request, upvotedBy) {
     if (request.downvotedBy.includes(upvotedBy)) {
@@ -435,91 +448,20 @@ var encode = function (originalString) {
     var encodedString = originalString.replace(/\./g, "(dot)");
     return encodedString;
 };
-var startPlayback = function (trackId) {
-    axios_1.default.put("https://api.spotify.com/v1/me/player/play", {
-        uris: ["spotify:track:" + trackId],
-    }, {
-        headers: {
-            Authorization: "Bearer " + OAuthToken,
-        },
-    });
-    // return response.statusText === "No Content";
-};
-var addTrackToPlaybackQueue = function (request) {
-    axios_1.default.post("https://api.spotify.com/v1/me/player/queue", {}, {
-        headers: {
-            Authorization: "Bearer " + OAuthToken,
-        },
-        params: { uri: "spotify:track:" + request.track.id },
-    });
-    console.log("just added " + request.track.name + " to the playback queue.");
-};
-var handleQueue = function (party) { return __awaiter(void 0, void 0, void 0, function () {
-    var timeUntilSongEnds, timeToSecondFunc;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0: return [4 /*yield*/, getTimeUntilSongEnds()];
-            case 1:
-                timeUntilSongEnds = _a.sent();
-                timeToSecondFunc = timeUntilSongEnds - 5000;
-                console.log("first step of handleQueue: second step is called in " + timeToSecondFunc / 1000 + " seconds.");
-                setTimeout(function () {
-                    queueNextSong(party);
-                    console.log("second step of handleQueue: waiting 10 seconds until next handleQueue");
-                    setTimeout(function () {
-                        handleQueue(party);
-                    }, 10000);
-                }, timeToSecondFunc);
-                return [2 /*return*/];
-        }
-    });
-}); };
-var getTimeUntilSongEnds = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var response;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0: return [4 /*yield*/, axios_1.default.get("https://api.spotify.com/v1/me/player/currently-playing", {
-                    headers: {
-                        Authorization: "Bearer " + OAuthToken,
-                    },
-                })];
-            case 1:
-                response = _a.sent();
-                return [2 /*return*/, response.data.item.duration_ms - response.data.progress_ms];
-        }
-    });
-}); };
-var queueNextSong = function (party) {
-    party.requests.sort(function (x, y) {
-        return y.rank - x.rank;
-    });
-    var nextSong = party.requests.shift();
-    if (nextSong) {
-        console.log("supposed to be adding " + nextSong.track.name);
-        addTrackToPlaybackQueue(nextSong);
-        var stringifiedRequests_4 = JSON.stringify(party.requests);
-        party.connections.forEach(function (itSocket, itId) {
-            if (itSocket)
-                itSocket.send(party.name + ".update." + stringifiedRequests_4);
-        });
+var hitParty = function (partyName) {
+    var timeout = watchdogs.get(partyName);
+    if (timeout) {
+        clearTimeout(timeout);
+        watchdogs.set(partyName, setTimeout(function () {
+            endParty(partyName);
+        }, 600000));
     }
+    console.log(partyName + " hit");
 };
-// const startPlayback = async (trackId: string): Promise<AxiosResponse> => {
-//   const response: AxiosResponse = await axios.put(`https://api.spotify.com/v1/me/player/play`, {
-//     headers: {
-//       Authorization: `Bearer ${OAuthToken}`,
-//     },
-//     data: { uris: [`spotify:track:${trackId}`] },
-//   });
-//   return response;
-// };
-// const addTrackToPlaybackQueue = async (trackId: string): Promise<AxiosResponse> => {
-//   const response: AxiosResponse = await axios.post(`https://api.spotify.com/v1/me/player/queue`, {
-//     headers: {
-//       Authorization: `Bearer ${OAuthToken}`,
-//     },
-//     params: { uri: `spotify:track:${trackId}` },
-//   });
-//   return response;
-// };
+var endParty = function (partyName) {
+    parties.delete(partyName);
+    watchdogs.delete(partyName);
+    console.log("deleted party: " + partyName);
+    console.log(parties);
+};
 //# sourceMappingURL=server.js.map

@@ -20,8 +20,14 @@ export function createState(inParentComponent: React.Component) {
     partyScreenVisible: false as boolean,
     fromServerPartyErrorMessage: "" as string,
     fromServerScreennameErrorMessage: "" as string,
+    currentlyPlayingTrack: null as IRequest | null,
 
-    handleMessage_create: function(partyName: string, participantName: string, subMsg: string) {
+    handleMessage_create: function(
+      partyName: string,
+      participantName: string,
+      subMsg: string,
+      accessToken: string
+    ) {
       switch (subMsg) {
         case "partyNameTaken": {
           this.setState({
@@ -33,6 +39,7 @@ export function createState(inParentComponent: React.Component) {
           this.setState({
             partyName,
             participantName,
+            accessToken,
             status: "joined",
             role: "host",
             requests: [] as IRequest[],
@@ -49,7 +56,8 @@ export function createState(inParentComponent: React.Component) {
       participantName: string,
       subMsg: string,
       accessToken: string | undefined,
-      stringifiedRequests: string
+      stringifiedRequests: string,
+      currentlyPlayingTrack: IRequest
     ) {
       switch (subMsg) {
         case "taken": {
@@ -78,6 +86,7 @@ export function createState(inParentComponent: React.Component) {
             requests: inRequests,
             signUpScreenVisible: false,
             partyScreenVisible: true,
+            currentlyPlayingTrack,
           });
           break;
         }
@@ -106,13 +115,14 @@ export function createState(inParentComponent: React.Component) {
     //   this.setState({});
     // }.bind(inParentComponent),
 
-    handleMessage_update: function(stringifiedRequests: string) {
+    handleMessage_update: function(stringifiedRequests: string, stringifiedCurrentlyPlayingTrack: string) {
       const inRequests: IRequest[] = JSON.parse(stringifiedRequests.replace(/--dot--/g, "."));
       inRequests.sort((x: IRequest, y: IRequest) => {
         return y.rank - x.rank;
       });
       this.setState({
         requests: inRequests,
+        currentlyPlayingTrack: JSON.parse(stringifiedCurrentlyPlayingTrack),
       });
       // switch (subMsg) {
       //   case "requested": {
@@ -154,6 +164,10 @@ export function createState(inParentComponent: React.Component) {
       //     break;
       //   }
       // }
+    }.bind(inParentComponent),
+
+    handleMessage_newToken: function(newToken: string) {
+      this.setState({ accessToken: newToken });
     }.bind(inParentComponent),
 
     cloneExactRequest: function(request: IRequest): IRequest {
@@ -222,11 +236,11 @@ export function createState(inParentComponent: React.Component) {
       );
     }.bind(inParentComponent),
 
-    onSearchChange: async function(term: string) {
-      const spotifyWorker: SpotifyWorker = new SpotifyWorker();
-      const searchResults = await spotifyWorker.getSearchResults(term);
-      this.setState({ searchResults });
-    }.bind(inParentComponent),
+    // onSearchChange: async function(term: string) {
+    //   const spotifyWorker: SpotifyWorker = new SpotifyWorker();
+    //   const searchResults = await spotifyWorker.getSearchResults(term, this.state.accessToken);
+    //   this.setState({ searchResults });
+    // }.bind(inParentComponent),
 
     handleVote: function(trackId: string, voter: string, choice: string) {
       if (choice === "up") {
@@ -280,8 +294,8 @@ export function createState(inParentComponent: React.Component) {
       }
     }.bind(inParentComponent),
 
-    createParty: async function(partyName: string, screenname: string, pid: string) {
-      this.state.socketComm.send(`create.${partyName}.${screenname}.${pid}.tokenhere`);
+    createParty: async function(partyName: string, screenname: string, pid: string, tokenCode: string) {
+      this.state.socketComm.send(`create.${partyName}.${screenname}.${pid}.${tokenCode}`);
     }.bind(inParentComponent),
 
     joinParty: function(partyName: string, screenname: string, pid: string) {

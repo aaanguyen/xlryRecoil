@@ -1,6 +1,8 @@
 import React from "react";
 import "../../../../style.css";
 
+// import { participantNameState } from "../../../recoil/";
+
 type IProps = {
   onSearchChange: Function;
   clearResults: Function;

@@ -5,7 +5,7 @@ import { Worker as SpotifyWorker } from "../../Spotify";
 import { ISpotifyTrack } from "../interfaces";
 
 interface IProps {
-  onSearchChange: Function;
+  accessToken: string;
   addTrackToRequests: Function;
   isTrackInRequests: Function;
   participantName: string;
@@ -32,7 +32,7 @@ class SearchArea extends React.Component<IProps, IState> {
 
   onSearchChange = async (term: string) => {
     const spotifyWorker: SpotifyWorker = new SpotifyWorker();
-    const searchResults = await spotifyWorker.getSearchResults(term);
+    const searchResults = await spotifyWorker.getSearchResults(term, this.props.accessToken);
     this.setState({ searchResults });
   };
 

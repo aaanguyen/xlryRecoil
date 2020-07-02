@@ -23,15 +23,24 @@ export function createSocketComm(inParentComponent: React.Component) {
         case "create": {
           const participantName: string = msgParts[2];
           const subMsg: string = msgParts[3];
-          this.state.handleMessage_create(partyName, participantName, subMsg);
+          const accessToken: string = msgParts[4];
+          this.state.handleMessage_create(partyName, participantName, subMsg, accessToken);
           break;
         }
         case "join": {
           const participantName: string = msgParts[2];
           const subMsg: string = msgParts[3];
-          const accessToken: string | undefined = msgParts[4];
-          const stringifiedRequests: string | undefined = msgParts[5];
-          this.state.handleMessage_join(partyName, participantName, subMsg, accessToken, stringifiedRequests);
+          const accessToken: string = msgParts[4];
+          const stringifiedRequests: string = msgParts[5];
+          const stringifiedCurrentlyPlayingTrack: string = msgParts[6];
+          this.state.handleMessage_join(
+            partyName,
+            participantName,
+            subMsg,
+            accessToken,
+            stringifiedRequests,
+            JSON.parse(stringifiedCurrentlyPlayingTrack)
+          );
           break;
         }
         case "request": {
@@ -51,7 +60,13 @@ export function createSocketComm(inParentComponent: React.Component) {
         // }
         case "update": {
           const stringifiedRequests: string = msgParts[2];
-          this.state.handleMessage_update(stringifiedRequests);
+          const stringifiedCurrentlyPlayingTrack: string = msgParts[3];
+          this.state.handleMessage_update(stringifiedRequests, stringifiedCurrentlyPlayingTrack);
+          break;
+        }
+        case "newToken": {
+          const newToken: string = msgParts[2];
+          this.state.handleMessage_newToken(newToken);
           break;
         }
         case "disconnected": {

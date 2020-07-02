@@ -8,6 +8,7 @@ import RequestsArea from "./PartyScreen/RequestsArea";
 import StartScreenHeader from "./StartScreen/StartScreenHeader";
 import StartScreenButtons from "./StartScreen/StartScreenButtons";
 import Form from "./StartScreen/Form";
+import CurrentlyPlayingTrack from "./PartyScreen/CurrentlyPlayingTrack";
 
 class App extends Component {
   state = createState(this);
@@ -52,6 +53,14 @@ class App extends Component {
     }
     this.setState({ pid: window.localStorage.getItem("pid") });
     console.log(window.localStorage.getItem("pid"));
+    const queryString = window.location.search;
+    console.log(queryString);
+    const urlParams = new URLSearchParams(queryString);
+    const tokenCode = urlParams.get("code");
+    console.log(tokenCode);
+    if (tokenCode) {
+      this.state.showSignUpScreen("host");
+    }
   };
 
   render() {
@@ -68,7 +77,7 @@ class App extends Component {
                 .update(codeVerifier)
                 .digest("base64");
               window.location.replace(
-                `https://accounts.spotify.com/authorize?response_type=code&client_id=${this.clientId}&redirect_uri=${this.redirectUri}&scope=user-read-currently-playing%20user-modify-playback-state&state=${codeVerifierCopy}&code_challenge=${codeChallenge}&code_challenge_method=S256`
+                `https://accounts.spotify.com/authorize?response_type=code&client_id=${this.clientId}&redirect_uri=${this.redirectUri}&scope=user-read-currently-playing%20user-modify-playback-state&show_dialog=true`
               );
             }}
             onJoinClick={this.state.showSignUpScreen}
@@ -86,12 +95,14 @@ class App extends Component {
         )}
         {this.state.partyScreenVisible && (
           <SearchArea
-            onSearchChange={this.state.onSearchChange}
+            accessToken={this.state.accessToken}
+            // onSearchChange={this.state.onSearchChange}
             addTrackToRequests={this.state.addTrackToRequests}
             isTrackInRequests={this.state.isTrackInRequests}
             participantName={this.state.participantName}
           />
         )}
+        <CurrentlyPlayingTrack request={this.state.currentlyPlayingTrack} />
         {this.state.partyScreenVisible && (
           <RequestsArea
             requestsList={this.state.requests}
