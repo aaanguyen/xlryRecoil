@@ -6,6 +6,7 @@ interface IProps {
   searchResults: ISpotifyTrack[];
   addTrackToRequests: Function;
   isTrackInRequests: Function;
+  isTrackPlaying: Function;
   participantName: string;
 }
 
@@ -13,6 +14,7 @@ const SearchResultList = ({
   searchResults,
   addTrackToRequests,
   isTrackInRequests,
+  isTrackPlaying,
   participantName,
 }: IProps) => {
   const renderedList = searchResults.map((searchResult: ISpotifyTrack) => (
@@ -21,10 +23,11 @@ const SearchResultList = ({
       searchResult={searchResult}
       addTrackToRequests={addTrackToRequests}
       isTrackInRequests={isTrackInRequests}
+      isTrackPlaying={isTrackPlaying}
       participantName={participantName}
     />
   ));
-  return <div>{renderedList}</div>;
+  return <div className="mt-4">{renderedList}</div>;
 };
 
 export default SearchResultList;

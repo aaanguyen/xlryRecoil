@@ -31,7 +31,7 @@ export default class Form extends Component<IProps, IState> {
     };
   }
 
-  invalidErrorMessage: string = "Invalid name. 4-12 characters, letters/numbers only.";
+  invalidErrorMessage: string = "Invalid name. 3-10 characters, letters/numbers only.";
 
   handlePartyNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({ partyName: e.target.value });
@@ -41,15 +41,18 @@ export default class Form extends Component<IProps, IState> {
     this.setState({ screenname: e.target.value });
   };
 
+  nameLengthValid = (name: string): Boolean => {
+    return name.length >= 3 && name.length <= 10;
+  };
+
   onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const validation = /^[a-zA-Z-]+(\s{0,1}[a-zA-Z-])*$/;
-    console.log(this.state.partyName);
-    const partyNameOK: RegExpMatchArray | null = this.state.partyName.match(validation);
-    const screennameOK: RegExpMatchArray | null = this.state.screenname.match(validation);
-    console.log(partyNameOK);
-    console.log(screennameOK);
-    if (partyNameOK && screennameOK) {
+    const validation = /^[a-zA-Z0-9]*$/;
+    const partyNameClean: RegExpMatchArray | null = this.state.partyName.match(validation);
+    const screennameClean: RegExpMatchArray | null = this.state.screenname.match(validation);
+    const partyNameLengthValid: Boolean = this.nameLengthValid(this.state.partyName);
+    const screennameLengthValid: Boolean = this.nameLengthValid(this.state.screenname);
+    if (partyNameClean && screennameClean && partyNameLengthValid && screennameLengthValid) {
       this.setState({
         showPartyError: false,
         showScreennameError: false,
@@ -58,19 +61,16 @@ export default class Form extends Component<IProps, IState> {
       });
       if (this.props.role === "host") {
         const queryString = window.location.search;
-        console.log(queryString);
         const urlParams = new URLSearchParams(queryString);
         const tokenCode = urlParams.get("code");
-        console.log(tokenCode);
         this.props.createParty(this.state.partyName, this.state.screenname, this.props.pid, tokenCode);
       } else if (this.props.role === "guest") {
         this.props.joinParty(this.state.partyName, this.state.screenname, this.props.pid);
       }
     } else {
-      console.log("yo we went in here");
       this.setState({
-        showPartyError: partyNameOK ? false : true,
-        showScreennameError: screennameOK ? false : true,
+        showPartyError: partyNameClean && partyNameLengthValid ? false : true,
+        showScreennameError: screennameClean && screennameLengthValid ? false : true,
         screennameErrorMessage: this.invalidErrorMessage,
       });
     }
@@ -78,7 +78,7 @@ export default class Form extends Component<IProps, IState> {
 
   render() {
     return (
-      <div className="bg-black">
+      <div className="bg-black font-nunito">
         <form onSubmit={e => this.onSubmit(e)}>
           <div className="h-64"></div>
           <input
@@ -88,7 +88,7 @@ export default class Form extends Component<IProps, IState> {
             autoFocus
             value={this.state.partyName}
             onChange={this.handlePartyNameChange}
-            className="mx-auto text-45xl text-white bg-black border-b-8 border-xlry-blue rounded-sm block mx-auto focus:outline-none w-11/12"
+            className="mx-auto text-4.5xl text-white bg-black border-b-8 border-xlry-blue rounded-sm block mx-auto focus:outline-none w-11/12"
           />
           {!this.state.showPartyError && (
             <p className="text-white text-3xl text-center">{this.props.fromServerPartyErrorMessage}</p>
@@ -103,7 +103,7 @@ export default class Form extends Component<IProps, IState> {
             autoCapitalize="none"
             value={this.state.screenname}
             onChange={this.handleScreennameChange}
-            className="px-auto text-45xl text-white bg-black border-b-8 border-xlry-blue rounded-sm block mx-auto focus:outline-none w-11/12"
+            className="px-auto text-4.5xl text-white bg-black border-b-8 border-xlry-blue rounded-sm block mx-auto focus:outline-none w-11/12"
           />
           {!this.state.showScreennameError && (
             <p className="text-white text-3xl text-center">{this.props.fromServerScreennameErrorMessage}</p>

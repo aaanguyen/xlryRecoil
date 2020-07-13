@@ -7,7 +7,7 @@ interface IProps {
 
 const StartScreenButtons = ({ onHostClick, onJoinClick }: IProps) => {
   return (
-    <div>
+    <div className="font-nunito">
       <div className="h-64"></div>
       <div className="h-24"></div>
       <div className="flex justify-center">

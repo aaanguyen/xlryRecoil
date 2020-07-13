@@ -61,7 +61,9 @@ var Party = /** @class */ (function () {
         this.requests = [];
         this.currentlyPlayingRequest = {};
         this.intervalIdentifier = {};
-        setTimeout(function () {
+        this.progressCheckIdentifier = {};
+        this.newTrackPlayedIdentifier = {};
+        this.tokenRefresherIdentifier = setTimeout(function () {
             _this.getAndSetNewAccessToken();
         }, NEW_TOKEN_DURATION);
     }
@@ -93,7 +95,7 @@ var Party = /** @class */ (function () {
                 downvotedBy: [],
                 track: newTrack,
             };
-            setTimeout(function () {
+            this.progressCheckIdentifier = setTimeout(function () {
                 _this.progressCheck();
             }, newTrack.durationInMs - 10000);
         }
@@ -137,7 +139,7 @@ var Party = /** @class */ (function () {
                         if (millisecondsRemaining > CHECKING_DURATION) {
                             console.log("progressCheck(): track was probably paused at some point, next progressCheck in " + (millisecondsRemaining -
                                 CHECKING_DURATION));
-                            setTimeout(function () {
+                            this.progressCheckIdentifier = setTimeout(function () {
                                 _this.progressCheck();
                             }, millisecondsRemaining - CHECKING_DURATION);
                         }
@@ -182,7 +184,7 @@ var Party = /** @class */ (function () {
             console.log("queuenextTrack(): supposed to be adding " + nextRequest.track.name);
             this.currentlyPlayingRequest = nextRequest;
             this.addTrackToPlaybackQueue(nextRequest.track);
-            setTimeout(function () {
+            this.newTrackPlayedIdentifier = setTimeout(function () {
                 _this.checkIfNextTrackStarted(nextRequest.track);
             }, CHECKING_DURATION);
             var stringifiedRequests_1 = JSON.stringify(this.requests);
@@ -215,7 +217,7 @@ var Party = /** @class */ (function () {
                         _a = response.data, progress_ms = _a.progress_ms, is_playing = _a.is_playing, _b = _a.item, id = _b.id, duration_ms = _b.duration_ms;
                         if (id !== newTrack.id) {
                             console.log("checkIfNextTrackStarted(): previous track is still playing. checking again in 10 seconds");
-                            setTimeout(function () {
+                            this.newTrackPlayedIdentifier = setTimeout(function () {
                                 _this.checkIfNextTrackStarted(newTrack);
                             }, CHECKING_DURATION);
                         }
@@ -223,7 +225,7 @@ var Party = /** @class */ (function () {
                             console.log("checkIfNextTrackStarted(): new track has played. progressCheck()ing in " + (duration_ms -
                                 progress_ms -
                                 CHECKING_DURATION));
-                            setTimeout(function () {
+                            this.progressCheckIdentifier = setTimeout(function () {
                                 _this.progressCheck();
                             }, duration_ms - progress_ms - CHECKING_DURATION);
                         }
@@ -275,13 +277,31 @@ var Party = /** @class */ (function () {
                         if (response.data.hasOwnProperty("refresh_token")) {
                             this.refreshToken = response.data.refresh_token;
                         }
-                        setTimeout(function () {
+                        this.tokenRefresherIdentifier = setTimeout(function () {
                             _this.getAndSetNewAccessToken();
                         }, ONE_HOUR);
                         return [2 /*return*/];
                 }
             });
         });
+    };
+    Party.prototype.destroy = function () {
+        clearInterval(this.intervalIdentifier);
+        clearTimeout(this.tokenRefresherIdentifier);
+        clearTimeout(this.progressCheckIdentifier);
+        clearTimeout(this.newTrackPlayedIdentifier);
+        this.name = "";
+        this.partyHost = "";
+        this.partyHostId = "";
+        this.partyHostSocket = {};
+        this.playbackStarted = false;
+        this.participants = new Map();
+        this.connections = new Map();
+        this.requests = [];
+        this.currentlyPlayingRequest = {};
+        this.intervalIdentifier = {};
+        this.accessToken = "";
+        this.refreshToken = "";
     };
     return Party;
 }());

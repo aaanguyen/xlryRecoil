@@ -1,8 +1,6 @@
 import path from "path";
 import express, { Express } from "express";
 import WebSocket from "ws";
-import axios, { AxiosResponse } from "axios";
-import qs from "querystring";
 
 import Party from "./Party";
 
@@ -13,9 +11,6 @@ const ONE_HOUR = 3600000;
 // const clientId: string = "7ed542734e124c7486ef5c71d464a905";
 // const clientSecret: string = "d2d45548a948459dbbd138b9e746db95";
 const redirectUri: string = "http%3A%2F%2F192%2E168%2E0%2E16%3A8080%2F";
-
-// const OAuthToken: string =
-//   "BQDjnHNuwDTR8oW89j1Asluuri3rIzrXy5xGaffOysOQHEk79loWtRNMvk6pfuQ_O0mjBOXgnG0GYxJWQe3NCwKkpK4HP0OlVAldbU5GloUSyp98HV0Bu1O-_iEuBRRJC7pW4gWRRjqT1Jh2lLodEQlYYWJ6Ej7K7ENFWCK7409dNyN4ze_y0MKYSeHqYTIL_ajdsbOwhv6NdRw49j0Yk0fS7De6EpyzPW23uvs";
 
 interface PingPongWebSocket extends WebSocket {
   isAlive: boolean;
@@ -40,113 +35,8 @@ export interface IRequest {
   track: ITrack;
 }
 
-// interface IParty {
-//   name: string;
-//   partyHost: string;
-//   accessToken: string;
-//   playbackStarted: boolean;
-//   participants: Map<string, string>;
-//   connections: Map<string, WebSocket | null>;
-//   requests: IRequest[];
-//   currentlyPlayingTrack: IRequest;
-// }
-
 const parties: Map<string, Party> = new Map();
 const watchdogs: Map<string, NodeJS.Timeout> = new Map();
-
-// const firstParty: IParty = {
-//   partyHost: "ant",
-//   accessToken: "tokenhere",
-//   playbackStarted: true,
-//   participants: new Set(["ant", "tawny", "sally", "landon", "joe", "esam", "pamela", "george", "amelia"]),
-//   requests: [
-//     {
-//       rank: 8,
-//       requestedBy: "ant",
-//       upvotedBy: ["tawny", "sally", "landon", "joe", "esam", "pamela", "george", "amelia"],
-//       downvotedBy: [],
-//       track: {
-//         id: "0sNY26ONhumtJKFJGdu7kr",
-//         name: "I'm Not Alright",
-//         artist: "Loud Luxury",
-//         imageUrl: "ab67616d0000b27349fc34f6d6a857dff2f7a5d5",
-//         explicit: false,
-//         durationInMs: 3000,
-//       },
-//     },
-//     {
-//       rank: 5,
-//       requestedBy: "tawny",
-//       upvotedBy: ["pamela", "sally", "amelia", "george", "pamela", "joe"],
-//       downvotedBy: ["landon"],
-//       track: {
-//         id: "0VjIjW4GlUZAMYd2vXMi3b",
-//         name: "Blinding Lights",
-//         artist: "The Weeknd",
-//         imageUrl: "ab67616d0000b2738863bc11d2aa12b54f5aeb36",
-//         explicit: false,
-//         durationInMs: 3000,
-//       },
-//     },
-//     {
-//       rank: 2,
-//       requestedBy: "sally",
-//       upvotedBy: ["tawny", "pamela"],
-//       downvotedBy: [],
-//       track: {
-//         id: "3Dv1eDb0MEgF93GpLXlucZ",
-//         name: "Say So",
-//         artist: "Doja Cat",
-//         imageUrl: "ab67616d0000b27382b243023b937fd579a35533",
-//         explicit: true,
-//         durationInMs: 3000,
-//       },
-//     },
-//     {
-//       rank: 3,
-//       requestedBy: "landon",
-//       upvotedBy: ["tawny", "sally", "esam", "ant"],
-//       downvotedBy: ["amelia"],
-//       track: {
-//         id: "4nK5YrxbMGZstTLbvj6Gxw",
-//         name: "Supalonely",
-//         artist: "BENEE",
-//         imageUrl: "ab67616d0000b27382f4ec53c54bdd5be4eed4a0",
-//         explicit: true,
-//         durationInMs: 3000,
-//       },
-//     },
-//     {
-//       rank: 0,
-//       requestedBy: "joe",
-//       upvotedBy: [],
-//       downvotedBy: [],
-//       track: {
-//         id: "4HBZA5flZLE435QTztThqH",
-//         name: "Stuck with U (with Justin Bieber)",
-//         artist: "Ariana Grande",
-//         imageUrl: "ab67616d0000b2732babb9dbd8f5146112f1bf86",
-//         explicit: false,
-//         durationInMs: 3000,
-//       },
-//     },
-//     {
-//       rank: 6,
-//       requestedBy: "esam",
-//       upvotedBy: ["tawny", "sally", "ant", "george", "landon", "pamela", "landon"],
-//       downvotedBy: ["amelia"],
-//       track: {
-//         id: "017PF4Q3l4DBUiWoXk4OWT",
-//         name: "Break My Heart",
-//         artist: "Dua Lipa",
-//         imageUrl: "ab67616d0000b273c966c2f4e08aee0442b6b8d6",
-//         explicit: true,
-//         durationInMs: 3000,
-//       },
-//     },
-//   ],
-// };
-// parties.set("firstparty", firstParty);
 
 const app: Express = express();
 app.use("/", express.static(path.join(__dirname, "../../client/dist")));
@@ -460,7 +350,12 @@ const hitParty = (partyName: string) => {
 };
 
 const endParty = (partyName: string) => {
+  let party: Party | undefined = parties.get(partyName);
+  if (party) party.destroy();
   parties.delete(partyName);
+  party = undefined;
+  const timeout: NodeJS.Timeout | undefined = watchdogs.get(partyName);
+  if (timeout) clearTimeout(timeout);
   watchdogs.delete(partyName);
   console.log(`deleted party: ${partyName}`);
   console.log(parties);

@@ -57,7 +57,7 @@ export function createState(inParentComponent: React.Component) {
       subMsg: string,
       accessToken: string | undefined,
       stringifiedRequests: string,
-      currentlyPlayingTrack: IRequest
+      stringifiedCurrentlyPlayingTrack: string
     ) {
       switch (subMsg) {
         case "taken": {
@@ -73,7 +73,7 @@ export function createState(inParentComponent: React.Component) {
           break;
         }
         case "success": {
-          const inRequests: IRequest[] = JSON.parse(stringifiedRequests);
+          const inRequests: IRequest[] = JSON.parse(stringifiedRequests.replace(/--dot--/g, "."));
           inRequests.sort((x: IRequest, y: IRequest) => {
             return y.rank - x.rank;
           });
@@ -86,7 +86,7 @@ export function createState(inParentComponent: React.Component) {
             requests: inRequests,
             signUpScreenVisible: false,
             partyScreenVisible: true,
-            currentlyPlayingTrack,
+            currentlyPlayingTrack: JSON.parse(stringifiedCurrentlyPlayingTrack.replace(/--dot--/g, ".")),
           });
           break;
         }
@@ -122,7 +122,7 @@ export function createState(inParentComponent: React.Component) {
       });
       this.setState({
         requests: inRequests,
-        currentlyPlayingTrack: JSON.parse(stringifiedCurrentlyPlayingTrack),
+        currentlyPlayingTrack: JSON.parse(stringifiedCurrentlyPlayingTrack.replace(/--dot--/g, ".")),
       });
       // switch (subMsg) {
       //   case "requested": {
@@ -223,14 +223,14 @@ export function createState(inParentComponent: React.Component) {
       return clonedRequest;
     }.bind(inParentComponent),
 
-    // addTrackToRequests: function (requester: string, trackId: string) {
-    //   // send WS
-    //   if (requester && trackId) {
-    //   }
-    // }.bind(inParentComponent),
     addTrackToRequests: function(spotifyTrack: ISpotifyTrack) {
       const track: ITrack = this.state.strippedTrack(spotifyTrack);
-      console.log(track);
+      if (this.state.currentlyPlayingTrack && track.id === this.state.currentlyPlayingTrack.track.id) {
+        return;
+      }
+      if (this.state.requests.filter((request: IRequest) => request.track.id === track.id).length > 0) {
+        return;
+      }
       this.state.socketComm.send(
         `request.${this.state.partyName}.${this.state.participantName}.${JSON.stringify(track)}`
       );
@@ -283,6 +283,14 @@ export function createState(inParentComponent: React.Component) {
           result = true;
         }
       });
+      return result;
+    }.bind(inParentComponent),
+
+    isTrackPlaying: function(track: ISpotifyTrack) {
+      let result: boolean = false;
+      if (this.state.currentlyPlayingTrack && this.state.currentlyPlayingTrack.track.id === track.id) {
+        result = true;
+      }
       return result;
     }.bind(inParentComponent),
 

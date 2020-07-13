@@ -1,5 +1,12 @@
 import React from "react";
 
+// import {atom, RecoilState} from 'recoil'
+
+// export const socketCommState: RecoilState<Function> = atom({
+//   key: 'socketCommState',
+//   default: createSocketComm()
+// })
+
 export function createSocketComm(inParentComponent: React.Component) {
   let connection: WebSocket;
   connection = new WebSocket("ws://192.168.0.16:9090");
@@ -39,7 +46,7 @@ export function createSocketComm(inParentComponent: React.Component) {
             subMsg,
             accessToken,
             stringifiedRequests,
-            JSON.parse(stringifiedCurrentlyPlayingTrack)
+            stringifiedCurrentlyPlayingTrack
           );
           break;
         }

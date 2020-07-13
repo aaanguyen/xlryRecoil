@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import crypto from "crypto";
+import { RecoilRoot } from "recoil";
 
 import { createState } from "../state";
 import "../../style.css";
@@ -9,6 +10,7 @@ import StartScreenHeader from "./StartScreen/StartScreenHeader";
 import StartScreenButtons from "./StartScreen/StartScreenButtons";
 import Form from "./StartScreen/Form";
 import CurrentlyPlayingTrack from "./PartyScreen/CurrentlyPlayingTrack";
+import HostInstructions from "./PartyScreen/HostInstructions";
 
 class App extends Component {
   state = createState(this);
@@ -65,6 +67,7 @@ class App extends Component {
 
   render() {
     return (
+      // <RecoilRoot>
       <div className="bg-black h-screen">
         {!this.state.partyScreenVisible && <StartScreenHeader />}
         {!this.state.signUpScreenVisible && !this.state.partyScreenVisible && (
@@ -100,9 +103,13 @@ class App extends Component {
             addTrackToRequests={this.state.addTrackToRequests}
             isTrackInRequests={this.state.isTrackInRequests}
             participantName={this.state.participantName}
+            isTrackPlaying={this.state.isTrackPlaying}
           />
         )}
         <CurrentlyPlayingTrack request={this.state.currentlyPlayingTrack} />
+        {this.state.partyScreenVisible && !this.state.currentlyPlayingTrack && (
+          <HostInstructions partyName={this.state.partyName} />
+        )}
         {this.state.partyScreenVisible && (
           <RequestsArea
             requestsList={this.state.requests}
@@ -110,9 +117,19 @@ class App extends Component {
             participantName={this.state.participantName}
           />
         )}
-        {/* <div className="options-area two wide row">
-              <OptionsArea state={this.state} />
-            </div> */}
+        {/* {this.state.partyScreenVisible && (
+          <aside className="bg-black opacity-50 w-64 min-h-screen flex flex-col text-white">
+            <div className="bg-white border-r border-b px-4 h-10 flex items-center">
+              <span className="py-2">{this.state.partyName}</span>
+            </div>
+            <div className="border-r flex-grow">
+              <ul>
+                <li className="p-3">{this.state.participantName}</li>
+                <li className="p-3">requests played</li>
+              </ul>
+            </div>
+          </aside>
+        )} */}
       </div>
     );
   }

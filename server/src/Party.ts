@@ -16,6 +16,9 @@ export default class Party {
   public requests: IRequest[];
   public currentlyPlayingRequest: IRequest;
   public intervalIdentifier: NodeJS.Timeout;
+  public tokenRefresherIdentifier: NodeJS.Timeout;
+  public progressCheckIdentifier: NodeJS.Timeout;
+  public newTrackPlayedIdentifier: NodeJS.Timeout;
   public accessToken: string;
   public refreshToken: string;
 
@@ -33,7 +36,9 @@ export default class Party {
     this.requests = [] as IRequest[];
     this.currentlyPlayingRequest = {} as IRequest;
     this.intervalIdentifier = {} as NodeJS.Timeout;
-    setTimeout(() => {
+    this.progressCheckIdentifier = {} as NodeJS.Timeout;
+    this.newTrackPlayedIdentifier = {} as NodeJS.Timeout;
+    this.tokenRefresherIdentifier = setTimeout(() => {
       this.getAndSetNewAccessToken();
     }, NEW_TOKEN_DURATION);
   }
@@ -56,7 +61,7 @@ export default class Party {
         downvotedBy: [] as string[],
         track: newTrack,
       };
-      setTimeout(() => {
+      this.progressCheckIdentifier = setTimeout(() => {
         this.progressCheck();
       }, newTrack.durationInMs - 10000);
     } else {
@@ -106,7 +111,7 @@ export default class Party {
         `progressCheck(): track was probably paused at some point, next progressCheck in ${millisecondsRemaining -
           CHECKING_DURATION}`
       );
-      setTimeout(() => {
+      this.progressCheckIdentifier = setTimeout(() => {
         this.progressCheck();
       }, millisecondsRemaining - CHECKING_DURATION);
     } else {
@@ -141,7 +146,7 @@ export default class Party {
       console.log(`queuenextTrack(): supposed to be adding ${nextRequest.track.name}`);
       this.currentlyPlayingRequest = nextRequest;
       this.addTrackToPlaybackQueue(nextRequest.track);
-      setTimeout(() => {
+      this.newTrackPlayedIdentifier = setTimeout(() => {
         this.checkIfNextTrackStarted(nextRequest.track);
       }, CHECKING_DURATION);
       const stringifiedRequests = JSON.stringify(this.requests);
@@ -178,7 +183,7 @@ export default class Party {
     } = response.data;
     if (id !== newTrack.id) {
       console.log(`checkIfNextTrackStarted(): previous track is still playing. checking again in 10 seconds`);
-      setTimeout(() => {
+      this.newTrackPlayedIdentifier = setTimeout(() => {
         this.checkIfNextTrackStarted(newTrack);
       }, CHECKING_DURATION);
     } else {
@@ -187,7 +192,7 @@ export default class Party {
           progress_ms -
           CHECKING_DURATION}`
       );
-      setTimeout(() => {
+      this.progressCheckIdentifier = setTimeout(() => {
         this.progressCheck();
       }, duration_ms - progress_ms - CHECKING_DURATION);
     }
@@ -227,9 +232,28 @@ export default class Party {
     if (response.data.hasOwnProperty("refresh_token")) {
       this.refreshToken = response.data.refresh_token;
     }
-    setTimeout(() => {
+    this.tokenRefresherIdentifier = setTimeout(() => {
       this.getAndSetNewAccessToken();
     }, ONE_HOUR);
+  }
+
+  public destroy() {
+    clearInterval(this.intervalIdentifier);
+    clearTimeout(this.tokenRefresherIdentifier);
+    clearTimeout(this.progressCheckIdentifier);
+    clearTimeout(this.newTrackPlayedIdentifier);
+    this.name = "";
+    this.partyHost = "";
+    this.partyHostId = "";
+    this.partyHostSocket = {} as WebSocket;
+    this.playbackStarted = false;
+    this.participants = new Map() as Map<string, string>;
+    this.connections = new Map() as Map<string, WebSocket | null>;
+    this.requests = [] as IRequest[];
+    this.currentlyPlayingRequest = {} as IRequest;
+    this.intervalIdentifier = {} as NodeJS.Timeout;
+    this.accessToken = "";
+    this.refreshToken = "";
   }
 }
 
