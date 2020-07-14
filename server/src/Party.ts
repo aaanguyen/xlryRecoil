@@ -173,6 +173,21 @@ export default class Party {
     console.log(`addTrackToPlaybackQueue(): just added ${track.name} to the playback queue.`);
   }
 
+  public addParticipant(newParticipant: string, pid: string, socket: WebSocket) {
+    let participant: string = newParticipant;
+    if (!this.connections.has(pid)) {
+      this.participants.set(newParticipant, pid);
+    } else {
+      this.participants.forEach((itPid: string, itParticipant: string) => {
+        if (pid === itPid) {
+          participant = itParticipant;
+        }
+      });
+    }
+    this.connections.set(pid, socket);
+    return participant;
+  }
+
   public async checkIfNextTrackStarted(newTrack: ITrack) {
     console.log(`checkIfNextTrackStarted(): getting currently playing`);
     const response: AxiosResponse = await this.getCurrentlyPlaying();

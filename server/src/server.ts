@@ -92,16 +92,34 @@ wsServer.on("connection", (socket: WebSocket) => {
           if (party) {
             const pid: string = msgParts[3];
             const participantPid: string | undefined = party.participants.get(participantName);
-            if (participantPid && participantPid !== pid) {
-              socket.send(`${partyName}.join.${participantName}.taken`);
-              break;
+            if (participantPid) {
+              if (participantPid !== pid) {
+                socket.send(`${partyName}.join.${participantName}.taken`);
+                break;
+              } else {
+                const oldSocket: WebSocket | undefined | null = party.connections.get(pid);
+                if (oldSocket) oldSocket.terminate();
+                party.connections.set(pid, socket);
+                const stringifiedRequests = JSON.stringify(party.requests);
+                socket.send(
+                  `${partyName}.join.${participantName}.success.${
+                    party.accessToken
+                  }.${stringifiedRequests}.${JSON.stringify(party.currentlyPlayingRequest)}`
+                );
+              }
             }
             if (party.connections.get(pid)) {
-              console.log(`this should be null: ${party.connections.get(pid)}`);
-              socket.send(`${partyName}.join.${participantName}.alreadyPresent`);
+              // console.log(`this should be null: ${party.connections.get(pid)}`);
+              let alreadyPresentName: string = "";
+              party.participants.forEach((itId: string, itName: string) => {
+                if (itId === pid) {
+                  alreadyPresentName = itName;
+                }
+              });
+              socket.send(`${partyName}.join.${alreadyPresentName}.alreadyPresent`);
               break;
             } else {
-              const assignedParticipantName = addParticipantToParty(party, participantName, pid, socket);
+              const assignedParticipantName = party.addParticipant(participantName, pid, socket);
               const ppSocket = socket as PingPongWebSocket;
               ppSocket.partyName = partyName;
               ppSocket.participantName = assignedParticipantName;
@@ -193,6 +211,8 @@ wsServer.on("connection", (socket: WebSocket) => {
           // ppSocket.partyName = partyName;
           // ppSocket.participantName = participantName;
           const pid: string = msgParts[3];
+          const oldSocket: WebSocket | undefined | null = party.connections.get(pid);
+          if (oldSocket) oldSocket.terminate();
           party.connections.set(pid, socket);
           const stringifiedRequests = JSON.stringify(party.requests);
           console.log(`${participantName} is reconnecting to ${partyName}`);
@@ -206,18 +226,18 @@ wsServer.on("connection", (socket: WebSocket) => {
   });
   socket.onclose = event => {
     console.log(`WebSocket is closed now. ${event.code}, ${event.reason}, ${event.wasClean}`);
-    const ppSocket = socket as PingPongWebSocket;
-    const party: Party | undefined = parties.get(ppSocket.partyName);
-    if (party) {
-      party.connections.forEach((itSocket: WebSocket | null, itId: string) => {
-        if (socket === itSocket) {
-          console.log(`just turned ${itId}'s socket from ${itSocket}`);
-          party.connections.set(itId, null);
-          console.log(`into ${party.connections.get(itId)}`);
-        }
-        //set timeout for removing presence
-      });
-    }
+    // const ppSocket = socket as PingPongWebSocket;
+    // const party: Party | undefined = parties.get(ppSocket.partyName);
+    // if (party) {
+    //   party.connections.forEach((itSocket: WebSocket | null, itId: string) => {
+    //     if (socket === itSocket) {
+    //       console.log(`just turned ${itId}'s socket from ${itSocket}`);
+    //       party.connections.set(itId, null);
+    //       console.log(`into ${party.connections.get(itId)}`);
+    //     }
+    //     //set timeout for removing presence
+    //   });
+    // }
   };
   socket.onerror = function(event) {
     console.error("WebSocket error observed:", event);
@@ -249,26 +269,6 @@ const interval = setInterval(() => {
     ppSocket.ping(null, undefined);
   });
 }, 30000);
-
-const addParticipantToParty = (
-  party: Party,
-  newParticipant: string,
-  pid: string,
-  socket: WebSocket
-): string => {
-  let participant: string = newParticipant;
-  if (!party.connections.has(pid)) {
-    party.participants.set(newParticipant, pid);
-  } else {
-    party.participants.forEach((itPid: string, itParticipant: string) => {
-      if (pid === itPid) {
-        participant = itParticipant;
-      }
-    });
-  }
-  party.connections.set(pid, socket);
-  return participant;
-};
 
 const upvoteRequest = (request: IRequest, upvotedBy: string): void => {
   if (request.downvotedBy.includes(upvotedBy)) {

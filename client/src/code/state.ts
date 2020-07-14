@@ -66,9 +66,15 @@ export function createState(inParentComponent: React.Component) {
           });
           break;
         }
+        case "invalidParty": {
+          this.setState({
+            fromServerPartyErrorMessage: `Invalid party.`,
+          });
+          break;
+        }
         case "alreadyPresent": {
           this.setState({
-            fromServerScreennameErrorMessage: "You're already in this party!",
+            fromServerScreennameErrorMessage: `You're already in this party! Join as ${participantName}.`,
           });
           break;
         }

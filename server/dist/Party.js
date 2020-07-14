@@ -203,6 +203,21 @@ var Party = /** @class */ (function () {
         });
         console.log("addTrackToPlaybackQueue(): just added " + track.name + " to the playback queue.");
     };
+    Party.prototype.addParticipant = function (newParticipant, pid, socket) {
+        var participant = newParticipant;
+        if (!this.connections.has(pid)) {
+            this.participants.set(newParticipant, pid);
+        }
+        else {
+            this.participants.forEach(function (itPid, itParticipant) {
+                if (pid === itPid) {
+                    participant = itParticipant;
+                }
+            });
+        }
+        this.connections.set(pid, socket);
+        return participant;
+    };
     Party.prototype.checkIfNextTrackStarted = function (newTrack) {
         return __awaiter(this, void 0, void 0, function () {
             var response, _a, progress_ms, is_playing, _b, id, duration_ms;

@@ -67,7 +67,7 @@ wsServer.on("connection", function (socket) {
         ppSocket.isAlive = true;
     });
     socket.on("message", function (inMsg) { return __awaiter(void 0, void 0, void 0, function () {
-        var msgParts, message, partyName, participantName, _a, pid, tokenCode, ppSocket_1, party, party, pid, participantPid, assignedParticipantName, ppSocket_2, stringifiedRequests, stringifiedTrack, party, trackId_1, party_1, request, stringifiedRequests_1, trackId_2, party_2, request, stringifiedRequests_2, party, pid, stringifiedRequests;
+        var msgParts, message, partyName, participantName, _a, pid, tokenCode, ppSocket_1, party, party, pid_1, participantPid, oldSocket, stringifiedRequests, alreadyPresentName_1, assignedParticipantName, ppSocket_2, stringifiedRequests, stringifiedTrack, party, trackId_1, party_1, request, stringifiedRequests_1, trackId_2, party_2, request, stringifiedRequests_2, party, pid, oldSocket, stringifiedRequests;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
@@ -114,19 +114,34 @@ wsServer.on("connection", function (socket) {
                         if (parties.has(partyName)) {
                             party = parties.get(partyName);
                             if (party) {
-                                pid = msgParts[3];
+                                pid_1 = msgParts[3];
                                 participantPid = party.participants.get(participantName);
-                                if (participantPid && participantPid !== pid) {
-                                    socket.send(partyName + ".join." + participantName + ".taken");
-                                    return [3 /*break*/, 11];
+                                if (participantPid) {
+                                    if (participantPid !== pid_1) {
+                                        socket.send(partyName + ".join." + participantName + ".taken");
+                                        return [3 /*break*/, 11];
+                                    }
+                                    else {
+                                        oldSocket = party.connections.get(pid_1);
+                                        if (oldSocket)
+                                            oldSocket.terminate();
+                                        party.connections.set(pid_1, socket);
+                                        stringifiedRequests = JSON.stringify(party.requests);
+                                        socket.send(partyName + ".join." + participantName + ".success." + party.accessToken + "." + stringifiedRequests + "." + JSON.stringify(party.currentlyPlayingRequest));
+                                    }
                                 }
-                                if (party.connections.get(pid)) {
-                                    console.log("this should be null: " + party.connections.get(pid));
-                                    socket.send(partyName + ".join." + participantName + ".alreadyPresent");
+                                if (party.connections.get(pid_1)) {
+                                    alreadyPresentName_1 = "";
+                                    party.participants.forEach(function (itId, itName) {
+                                        if (itId === pid_1) {
+                                            alreadyPresentName_1 = itName;
+                                        }
+                                    });
+                                    socket.send(partyName + ".join." + alreadyPresentName_1 + ".alreadyPresent");
                                     return [3 /*break*/, 11];
                                 }
                                 else {
-                                    assignedParticipantName = addParticipantToParty(party, participantName, pid, socket);
+                                    assignedParticipantName = party.addParticipant(participantName, pid_1, socket);
                                     ppSocket_2 = socket;
                                     ppSocket_2.partyName = partyName;
                                     ppSocket_2.participantName = assignedParticipantName;
@@ -213,6 +228,9 @@ wsServer.on("connection", function (socket) {
                         party = parties.get(partyName);
                         if (party) {
                             pid = msgParts[3];
+                            oldSocket = party.connections.get(pid);
+                            if (oldSocket)
+                                oldSocket.terminate();
                             party.connections.set(pid, socket);
                             stringifiedRequests = JSON.stringify(party.requests);
                             console.log(participantName + " is reconnecting to " + partyName);
@@ -227,18 +245,18 @@ wsServer.on("connection", function (socket) {
     }); });
     socket.onclose = function (event) {
         console.log("WebSocket is closed now. " + event.code + ", " + event.reason + ", " + event.wasClean);
-        var ppSocket = socket;
-        var party = parties.get(ppSocket.partyName);
-        if (party) {
-            party.connections.forEach(function (itSocket, itId) {
-                if (socket === itSocket) {
-                    console.log("just turned " + itId + "'s socket from " + itSocket);
-                    party.connections.set(itId, null);
-                    console.log("into " + party.connections.get(itId));
-                }
-                //set timeout for removing presence
-            });
-        }
+        // const ppSocket = socket as PingPongWebSocket;
+        // const party: Party | undefined = parties.get(ppSocket.partyName);
+        // if (party) {
+        //   party.connections.forEach((itSocket: WebSocket | null, itId: string) => {
+        //     if (socket === itSocket) {
+        //       console.log(`just turned ${itId}'s socket from ${itSocket}`);
+        //       party.connections.set(itId, null);
+        //       console.log(`into ${party.connections.get(itId)}`);
+        //     }
+        //     //set timeout for removing presence
+        //   });
+        // }
     };
     socket.onerror = function (event) {
         console.error("WebSocket error observed:", event);
@@ -267,21 +285,6 @@ var interval = setInterval(function () {
         ppSocket.ping(null, undefined);
     });
 }, 30000);
-var addParticipantToParty = function (party, newParticipant, pid, socket) {
-    var participant = newParticipant;
-    if (!party.connections.has(pid)) {
-        party.participants.set(newParticipant, pid);
-    }
-    else {
-        party.participants.forEach(function (itPid, itParticipant) {
-            if (pid === itPid) {
-                participant = itParticipant;
-            }
-        });
-    }
-    party.connections.set(pid, socket);
-    return participant;
-};
 var upvoteRequest = function (request, upvotedBy) {
     if (request.downvotedBy.includes(upvotedBy)) {
         request.rank++;
