@@ -6526,7 +6526,7 @@ body {
 }
 
 .text-7xl{
-  font-size: 5rem;
+  font-size: 4.5rem;
 }
 
 .text-8xl{
@@ -16873,8 +16873,16 @@ body {
   grid-template-rows: repeat(6, minmax(0, 1fr));
 }
 
+.grid-rows-12{
+  grid-template-rows: repeat(12, minmax(0, 1fr));
+}
+
 .grid-rows-none{
   grid-template-rows: none;
+}
+
+.grid-rows-layout{
+  grid-template-rows: 200px minmax(900px, 1fr) 100px;
 }
 
 .row-auto{
@@ -16963,6 +16971,30 @@ body {
 
 .row-end-7{
   grid-row-end: 7;
+}
+
+.row-end-8{
+  grid-row-end: 8;
+}
+
+.row-end-9{
+  grid-row-end: 9;
+}
+
+.row-end-10{
+  grid-row-end: 10;
+}
+
+.row-end-11{
+  grid-row-end: 11;
+}
+
+.row-end-12{
+  grid-row-end: 12;
+}
+
+.row-end-13{
+  grid-row-end: 13;
 }
 
 .row-end-auto{
@@ -24892,7 +24924,7 @@ body {
   }
 
   .sm\:text-7xl{
-    font-size: 5rem;
+    font-size: 4.5rem;
   }
 
   .sm\:text-8xl{
@@ -35239,8 +35271,16 @@ body {
     grid-template-rows: repeat(6, minmax(0, 1fr));
   }
 
+  .sm\:grid-rows-12{
+    grid-template-rows: repeat(12, minmax(0, 1fr));
+  }
+
   .sm\:grid-rows-none{
     grid-template-rows: none;
+  }
+
+  .sm\:grid-rows-layout{
+    grid-template-rows: 200px minmax(900px, 1fr) 100px;
   }
 
   .sm\:row-auto{
@@ -35329,6 +35369,30 @@ body {
 
   .sm\:row-end-7{
     grid-row-end: 7;
+  }
+
+  .sm\:row-end-8{
+    grid-row-end: 8;
+  }
+
+  .sm\:row-end-9{
+    grid-row-end: 9;
+  }
+
+  .sm\:row-end-10{
+    grid-row-end: 10;
+  }
+
+  .sm\:row-end-11{
+    grid-row-end: 11;
+  }
+
+  .sm\:row-end-12{
+    grid-row-end: 12;
+  }
+
+  .sm\:row-end-13{
+    grid-row-end: 13;
   }
 
   .sm\:row-end-auto{
@@ -43223,7 +43287,7 @@ body {
   }
 
   .md\:text-7xl{
-    font-size: 5rem;
+    font-size: 4.5rem;
   }
 
   .md\:text-8xl{
@@ -53570,8 +53634,16 @@ body {
     grid-template-rows: repeat(6, minmax(0, 1fr));
   }
 
+  .md\:grid-rows-12{
+    grid-template-rows: repeat(12, minmax(0, 1fr));
+  }
+
   .md\:grid-rows-none{
     grid-template-rows: none;
+  }
+
+  .md\:grid-rows-layout{
+    grid-template-rows: 200px minmax(900px, 1fr) 100px;
   }
 
   .md\:row-auto{
@@ -53660,6 +53732,30 @@ body {
 
   .md\:row-end-7{
     grid-row-end: 7;
+  }
+
+  .md\:row-end-8{
+    grid-row-end: 8;
+  }
+
+  .md\:row-end-9{
+    grid-row-end: 9;
+  }
+
+  .md\:row-end-10{
+    grid-row-end: 10;
+  }
+
+  .md\:row-end-11{
+    grid-row-end: 11;
+  }
+
+  .md\:row-end-12{
+    grid-row-end: 12;
+  }
+
+  .md\:row-end-13{
+    grid-row-end: 13;
   }
 
   .md\:row-end-auto{
@@ -61554,7 +61650,7 @@ body {
   }
 
   .lg\:text-7xl{
-    font-size: 5rem;
+    font-size: 4.5rem;
   }
 
   .lg\:text-8xl{
@@ -71901,8 +71997,16 @@ body {
     grid-template-rows: repeat(6, minmax(0, 1fr));
   }
 
+  .lg\:grid-rows-12{
+    grid-template-rows: repeat(12, minmax(0, 1fr));
+  }
+
   .lg\:grid-rows-none{
     grid-template-rows: none;
+  }
+
+  .lg\:grid-rows-layout{
+    grid-template-rows: 200px minmax(900px, 1fr) 100px;
   }
 
   .lg\:row-auto{
@@ -71991,6 +72095,30 @@ body {
 
   .lg\:row-end-7{
     grid-row-end: 7;
+  }
+
+  .lg\:row-end-8{
+    grid-row-end: 8;
+  }
+
+  .lg\:row-end-9{
+    grid-row-end: 9;
+  }
+
+  .lg\:row-end-10{
+    grid-row-end: 10;
+  }
+
+  .lg\:row-end-11{
+    grid-row-end: 11;
+  }
+
+  .lg\:row-end-12{
+    grid-row-end: 12;
+  }
+
+  .lg\:row-end-13{
+    grid-row-end: 13;
   }
 
   .lg\:row-end-auto{
@@ -79885,7 +80013,7 @@ body {
   }
 
   .xl\:text-7xl{
-    font-size: 5rem;
+    font-size: 4.5rem;
   }
 
   .xl\:text-8xl{
@@ -90232,8 +90360,16 @@ body {
     grid-template-rows: repeat(6, minmax(0, 1fr));
   }
 
+  .xl\:grid-rows-12{
+    grid-template-rows: repeat(12, minmax(0, 1fr));
+  }
+
   .xl\:grid-rows-none{
     grid-template-rows: none;
+  }
+
+  .xl\:grid-rows-layout{
+    grid-template-rows: 200px minmax(900px, 1fr) 100px;
   }
 
   .xl\:row-auto{
@@ -90322,6 +90458,30 @@ body {
 
   .xl\:row-end-7{
     grid-row-end: 7;
+  }
+
+  .xl\:row-end-8{
+    grid-row-end: 8;
+  }
+
+  .xl\:row-end-9{
+    grid-row-end: 9;
+  }
+
+  .xl\:row-end-10{
+    grid-row-end: 10;
+  }
+
+  .xl\:row-end-11{
+    grid-row-end: 11;
+  }
+
+  .xl\:row-end-12{
+    grid-row-end: 12;
+  }
+
+  .xl\:row-end-13{
+    grid-row-end: 13;
   }
 
   .xl\:row-end-auto{

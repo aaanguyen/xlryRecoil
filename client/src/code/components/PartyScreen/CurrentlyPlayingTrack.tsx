@@ -18,24 +18,26 @@ const CurrentlyPlayingTrack = ({ request }: IProps) => {
         alt={request.track.id}
       />
       <div className="content">
-        <div className="w-full absolute bottom-0 grid grid-rows-6 h-56 text-center mb-16 font-nunito font-bold">
-          <div className="text-6xl text-white row-start-1 row-span-2 font-bold">
-            {request.track.name.replace(/ \([\s\S]*?\)/g, "").replace(/ - From.*/g, "")}
+        <div className="w-full absolute bottom-0 grid grid-rows-12 h-64 text-center mb-4 font-nunito font-bold">
+          <div className="truncate text-6xl text-white row-start-1 row-end-6 font-bold mx-10 mt-4">
+            {request.track.name}
           </div>
-          <div className="text-5xl text-white row-start-3 row-end-4">{request.track.artist}</div>
-          <div className="text-4xl text-white row-start-5 row-end-6">
+          <div className="text-5xl text-white row-start-6 row-end-8 leading-9 truncate">
+            {request.track.artist}
+          </div>
+          <div className="text-4xl text-white row-start-8 row-end-10">
             <div className="grid grid-cols-6">
               <div className="col-start-1 col-end-3 grid grid-rows-1">
                 <div className="row-span-1">Requested by:</div>
               </div>
             </div>
           </div>
-          <div className="text-4xl text-white row-start-6 row-end-7">
+          <div className="text-4xl text-white row-start-10 row-end-12">
             <div className="grid grid-cols-6">
               <div className="col-start-1 col-end-3 grid grid-rows-2">
-                <div className="row-span-2">{request.requestedBy}</div>
+                <div className="row-span-2 leading-10">{request.requestedBy}</div>
               </div>
-              <div className="col-start-5 col-end-7 text-4.5xl leading-6">
+              <div className="col-start-5 col-end-7 text-4.5xl leading-5">
                 {request.upvotedBy.length} {request.upvotedBy.length === 1 ? `vote` : `votes`}
               </div>
             </div>

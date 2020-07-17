@@ -42,13 +42,13 @@ const SearchResultItem = ({
       />
       <div className="grid grid-rows-2 pl-4">
         <p className="row-span-1 truncate text-4.5xl pt-1-2">{searchResult.name}</p>
-        <div className="row-span-2">
+        <div className="row-span-2 truncate">
           {searchResult.explicit && (
             <span className="vertical-12 bg-gray-400 rounded-md px-1 text-2xl font-extrabold text-black">
               E
             </span>
           )}
-          <span className="truncate text-gray-400 text-4xl">
+          <span className="text-gray-400 text-4xl">
             {searchResult.explicit ? " " : ""}
             {searchResult.artists[0].name}
           </span>
