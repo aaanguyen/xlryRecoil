@@ -22,7 +22,7 @@ export function createSocketComm(inParentComponent: React.Component) {
       console.log(`Websocket closed: ${error.code}, ${error.reason}, ${error.wasClean}`);
     };
     connection.onmessage = function(inMessage: any) {
-      console.log(`WebSocket message received: ${inMessage.data}`);
+      // console.log(`WebSocket message received: ${inMessage.data}`);
       const msgParts: string[] = inMessage.data.split(".");
       const partyName: string = msgParts[0];
       const message: string = msgParts[1];
@@ -96,12 +96,12 @@ export function createSocketComm(inParentComponent: React.Component) {
     if (connection.readyState > 1) {
       connection = new WebSocket("ws://192.168.0.16:9090");
       connection.onopen = () => {
-        console.log(`WebSocket reconnecting`);
+        // console.log(`WebSocket reconnecting`);
         connection.send(`reconnect.${partyName}.${participantName}.${pid}`);
       };
       connectionSetup(connection);
     } else {
-      console.log(`didn't need to reconnect`);
+      // console.log(`didn't need to reconnect`);
     }
   };
 

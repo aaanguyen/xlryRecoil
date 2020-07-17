@@ -47,19 +47,19 @@ class App extends Component {
 
   componentDidMount = async () => {
     window.addEventListener("focus", () => {
-      console.log(`yoooooo just focused`);
+      // console.log(`yoooooo just focused`);
       this.state.reconnect();
     });
     if (!window.localStorage.getItem("pid")) {
       window.localStorage.setItem("pid", new Date().getTime().toString());
     }
     this.setState({ pid: window.localStorage.getItem("pid") });
-    console.log(window.localStorage.getItem("pid"));
+    // console.log(window.localStorage.getItem("pid"));
     const queryString = window.location.search;
-    console.log(queryString);
+    // console.log(queryString);
     const urlParams = new URLSearchParams(queryString);
     const tokenCode = urlParams.get("code");
-    console.log(tokenCode);
+    // console.log(tokenCode);
     if (tokenCode) {
       this.state.showSignUpScreen("host");
     }
