@@ -34,7 +34,7 @@ const SearchResultItem = ({
     //     </div>
     //   </div>
     // </div>
-    <div className="flex h-40 text-white z-10 px-6 py-4 font-nunito">
+    <div className="flex h-40 text-white z-10 px-6 py-4 font-mulish">
       <img
         className="flex-none h-32 w-32"
         src={searchResult.album.images.length !== 0 ? searchResult.album.images[0].url : ""}

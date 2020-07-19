@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@200;300;400;600;700;800;900");
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@200;300;400;600;700;800;900&family=Almarai:wght@400;700;800&family=Cabin:wght@400;500;600;700&family=Heebo:wght@300;400;500;600;700;800;900&family=Lato:wght@400;900&family=Libre+Franklin:wght@400;500;600;700;800;900&family=Mukta:wght@400;500;600;700;800&family=Mulish&family=Poppins:wght@400;500;600;700;800;900&family=Rubik:wght@400;500;700;900&family=Varela+Round&display=swap");
 
 @tailwind base;
 
@@ -29,6 +29,18 @@ body {
   position: relative;
   margin-top: -70vw;
   height: 70vw;
+}
+
+.accordion {
+  opacity: 0;
+  max-height: 0;
+  overflow-y: hidden;
+  transition: all 0.4s ease;
+}
+
+.expanded {
+  max-height: 1000px;
+  opacity: 1;
 }
 
 .vertical-12 {

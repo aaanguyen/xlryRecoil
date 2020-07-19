@@ -68,7 +68,7 @@ class App extends Component {
   render() {
     return (
       // <RecoilRoot>
-      <div className="bg-black h-screen">
+      <div className="bg-black h-screen xl:h-full">
         {!this.state.partyScreenVisible && <StartScreenHeader />}
         {!this.state.signUpScreenVisible && !this.state.partyScreenVisible && (
           <StartScreenButtons

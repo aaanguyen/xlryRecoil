@@ -1,4 +1,4 @@
-@import url(https://fonts.googleapis.com/css2?family=Nunito:wght@200;300;400;600;700;800;900);
+@import url(https://fonts.googleapis.com/css2?family=Nunito:wght@200;300;400;600;700;800;900&family=Almarai:wght@400;700;800&family=Cabin:wght@400;500;600;700&family=Heebo:wght@300;400;500;600;700;800;900&family=Lato:wght@400;900&family=Libre+Franklin:wght@400;500;600;700;800;900&family=Mukta:wght@400;500;600;700;800&family=Mulish&family=Poppins:wght@400;500;600;700;800;900&family=Rubik:wght@400;500;700;900&family=Varela+Round&display=swap);
 /*! normalize.css v8.0.1 | MIT License | github.com/necolas/normalize.css */
 
 /* Document
@@ -6260,6 +6260,46 @@ body {
   font-family: Nunito;
 }
 
+.font-almarai{
+  font-family: Almarai;
+}
+
+.font-cabin{
+  font-family: Cabin;
+}
+
+.font-heebo{
+  font-family: Heebo;
+}
+
+.font-lato{
+  font-family: Lato;
+}
+
+.font-librefranklin{
+  font-family: Libre Franklin;
+}
+
+.font-mukta{
+  font-family: Mukta;
+}
+
+.font-mulish{
+  font-family: Mulish;
+}
+
+.font-poppins{
+  font-family: Poppins;
+}
+
+.font-rubik{
+  font-family: Rubik;
+}
+
+.font-varelaround{
+  font-family: Varela Round;
+}
+
 .font-hairline{
   font-weight: 100;
 }
@@ -6578,6 +6618,18 @@ body {
 
 .leading-12{
   line-height: 3rem;
+}
+
+.leading-13{
+  line-height: 3.25rem;
+}
+
+.leading-14{
+  line-height: 3.5rem;
+}
+
+.leading-15{
+  line-height: 3.75rem;
 }
 
 .leading-none{
@@ -19057,6 +19109,18 @@ body {
   height: 70vw;
 }
 
+.accordion {
+  opacity: 0;
+  max-height: 0;
+  overflow-y: hidden;
+  transition: all 0.4s ease;
+}
+
+.expanded {
+  max-height: 1000px;
+  opacity: 1;
+}
+
 .vertical-12 {
   vertical-align: 12%;
 }
@@ -24682,6 +24746,46 @@ body {
     font-family: Nunito;
   }
 
+  .sm\:font-almarai{
+    font-family: Almarai;
+  }
+
+  .sm\:font-cabin{
+    font-family: Cabin;
+  }
+
+  .sm\:font-heebo{
+    font-family: Heebo;
+  }
+
+  .sm\:font-lato{
+    font-family: Lato;
+  }
+
+  .sm\:font-librefranklin{
+    font-family: Libre Franklin;
+  }
+
+  .sm\:font-mukta{
+    font-family: Mukta;
+  }
+
+  .sm\:font-mulish{
+    font-family: Mulish;
+  }
+
+  .sm\:font-poppins{
+    font-family: Poppins;
+  }
+
+  .sm\:font-rubik{
+    font-family: Rubik;
+  }
+
+  .sm\:font-varelaround{
+    font-family: Varela Round;
+  }
+
   .sm\:font-hairline{
     font-weight: 100;
   }
@@ -25000,6 +25104,18 @@ body {
 
   .sm\:leading-12{
     line-height: 3rem;
+  }
+
+  .sm\:leading-13{
+    line-height: 3.25rem;
+  }
+
+  .sm\:leading-14{
+    line-height: 3.5rem;
+  }
+
+  .sm\:leading-15{
+    line-height: 3.75rem;
   }
 
   .sm\:leading-none{
@@ -43069,6 +43185,46 @@ body {
     font-family: Nunito;
   }
 
+  .md\:font-almarai{
+    font-family: Almarai;
+  }
+
+  .md\:font-cabin{
+    font-family: Cabin;
+  }
+
+  .md\:font-heebo{
+    font-family: Heebo;
+  }
+
+  .md\:font-lato{
+    font-family: Lato;
+  }
+
+  .md\:font-librefranklin{
+    font-family: Libre Franklin;
+  }
+
+  .md\:font-mukta{
+    font-family: Mukta;
+  }
+
+  .md\:font-mulish{
+    font-family: Mulish;
+  }
+
+  .md\:font-poppins{
+    font-family: Poppins;
+  }
+
+  .md\:font-rubik{
+    font-family: Rubik;
+  }
+
+  .md\:font-varelaround{
+    font-family: Varela Round;
+  }
+
   .md\:font-hairline{
     font-weight: 100;
   }
@@ -43387,6 +43543,18 @@ body {
 
   .md\:leading-12{
     line-height: 3rem;
+  }
+
+  .md\:leading-13{
+    line-height: 3.25rem;
+  }
+
+  .md\:leading-14{
+    line-height: 3.5rem;
+  }
+
+  .md\:leading-15{
+    line-height: 3.75rem;
   }
 
   .md\:leading-none{
@@ -61456,6 +61624,46 @@ body {
     font-family: Nunito;
   }
 
+  .lg\:font-almarai{
+    font-family: Almarai;
+  }
+
+  .lg\:font-cabin{
+    font-family: Cabin;
+  }
+
+  .lg\:font-heebo{
+    font-family: Heebo;
+  }
+
+  .lg\:font-lato{
+    font-family: Lato;
+  }
+
+  .lg\:font-librefranklin{
+    font-family: Libre Franklin;
+  }
+
+  .lg\:font-mukta{
+    font-family: Mukta;
+  }
+
+  .lg\:font-mulish{
+    font-family: Mulish;
+  }
+
+  .lg\:font-poppins{
+    font-family: Poppins;
+  }
+
+  .lg\:font-rubik{
+    font-family: Rubik;
+  }
+
+  .lg\:font-varelaround{
+    font-family: Varela Round;
+  }
+
   .lg\:font-hairline{
     font-weight: 100;
   }
@@ -61774,6 +61982,18 @@ body {
 
   .lg\:leading-12{
     line-height: 3rem;
+  }
+
+  .lg\:leading-13{
+    line-height: 3.25rem;
+  }
+
+  .lg\:leading-14{
+    line-height: 3.5rem;
+  }
+
+  .lg\:leading-15{
+    line-height: 3.75rem;
   }
 
   .lg\:leading-none{
@@ -79843,6 +80063,46 @@ body {
     font-family: Nunito;
   }
 
+  .xl\:font-almarai{
+    font-family: Almarai;
+  }
+
+  .xl\:font-cabin{
+    font-family: Cabin;
+  }
+
+  .xl\:font-heebo{
+    font-family: Heebo;
+  }
+
+  .xl\:font-lato{
+    font-family: Lato;
+  }
+
+  .xl\:font-librefranklin{
+    font-family: Libre Franklin;
+  }
+
+  .xl\:font-mukta{
+    font-family: Mukta;
+  }
+
+  .xl\:font-mulish{
+    font-family: Mulish;
+  }
+
+  .xl\:font-poppins{
+    font-family: Poppins;
+  }
+
+  .xl\:font-rubik{
+    font-family: Rubik;
+  }
+
+  .xl\:font-varelaround{
+    font-family: Varela Round;
+  }
+
   .xl\:font-hairline{
     font-weight: 100;
   }
@@ -80161,6 +80421,18 @@ body {
 
   .xl\:leading-12{
     line-height: 3rem;
+  }
+
+  .xl\:leading-13{
+    line-height: 3.25rem;
+  }
+
+  .xl\:leading-14{
+    line-height: 3.5rem;
+  }
+
+  .xl\:leading-15{
+    line-height: 3.75rem;
   }
 
   .xl\:leading-none{

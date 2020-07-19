@@ -12,7 +12,7 @@ const StartScreenButtons = ({ onHostClick, onJoinClick }: IProps) => {
       <div className="h-24"></div>
       <div className="flex justify-center">
         <button
-          className="bg-xlry-blue text-white font-extrabold text-4xl w-11/12 py-8 rounded-lg"
+          className="bg-xlry-blue text-white font-extrabold rounded-lg text-4xl w-11/12 py-8"
           onClick={() => onHostClick()}
         >
           HOST
@@ -21,7 +21,7 @@ const StartScreenButtons = ({ onHostClick, onJoinClick }: IProps) => {
       <div className="h-12"></div>
       <div className="flex justify-center">
         <button
-          className="bg-xlry-blue text-white font-extrabold text-4xl w-11/12 py-8 rounded-lg"
+          className="bg-xlry-blue text-white font-extrabold rounded-lg text-4xl w-11/12 py-8"
           onClick={() => onJoinClick("guest")}
         >
           JOIN

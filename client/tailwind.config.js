@@ -11,6 +11,9 @@ module.exports = {
       lineHeight: {
         "extra-loose": "2.5",
         "12": "3rem",
+        "13": "3.25rem",
+        "14": "3.5rem",
+        "15": "3.75rem",
         relaxedloose: "1.8",
       },
       spacing: {
@@ -43,6 +46,16 @@ module.exports = {
     },
     fontFamily: {
       nunito: ["Nunito"],
+      almarai: ["Almarai"],
+      cabin: ["Cabin"],
+      heebo: ["Heebo"],
+      lato: ["Lato"],
+      librefranklin: ["Libre Franklin"],
+      mukta: ["Mukta"],
+      mulish: ["Mulish"],
+      poppins: ["Poppins"],
+      rubik: ["Rubik"],
+      varelaround: ["Varela Round"],
     },
     fontSize: {
       xs: ".75rem",

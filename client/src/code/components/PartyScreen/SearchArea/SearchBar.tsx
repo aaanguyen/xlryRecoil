@@ -165,7 +165,7 @@ class SearchBar extends React.Component<IProps, IState> {
             }
             // addTrackToRequests("ant", searchResult);
           }
-          className={this.state.clearButtonVisible ? "clearVisible" : "clearHidden"}
+          className={`${this.state.clearButtonVisible ? `clearVisible` : `clearHidden`}`}
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 3300 2100"
         >

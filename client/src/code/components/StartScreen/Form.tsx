@@ -88,7 +88,7 @@ export default class Form extends Component<IProps, IState> {
             autoFocus
             value={this.state.partyName}
             onChange={this.handlePartyNameChange}
-            className="mx-auto text-4.5xl text-white bg-black border-b-8 border-xlry-blue rounded-sm block mx-auto focus:outline-none w-11/12"
+            className="mx-auto text-4.5xl text-white bg-black border-b-8 border-xlry-blue rounded-sm block focus:outline-none w-11/12"
           />
           {!this.state.showPartyError && (
             <p className="text-white text-3xl text-center">{this.props.fromServerPartyErrorMessage}</p>
@@ -103,7 +103,7 @@ export default class Form extends Component<IProps, IState> {
             autoCapitalize="none"
             value={this.state.screenname}
             onChange={this.handleScreennameChange}
-            className="px-auto text-4.5xl text-white bg-black border-b-8 border-xlry-blue rounded-sm block mx-auto focus:outline-none w-11/12"
+            className="mx-auto text-4.5xl text-white bg-black border-b-8 border-xlry-blue rounded-sm block focus:outline-none w-11/12"
           />
           {!this.state.showScreennameError && (
             <p className="text-white text-3xl text-center">{this.props.fromServerScreennameErrorMessage}</p>
